@@ -77,7 +77,7 @@ State **create_labyrinth(const unsigned size) {
     for (int y = 0; y < size; y++)
         for (int x = 0; x < size; x++)
             if (!isVisited[x][y])
-                map[x][y] = Wall;
+                map[x][y] = ((x + y) % 3 && y % 2)? Wall : Player;
 
     return map;
 }
