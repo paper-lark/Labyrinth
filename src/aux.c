@@ -109,3 +109,15 @@ State **create_labyrinth(const unsigned size) {
 
     return map;
 }
+
+Point *rand_position(State **map, const unsigned size) {
+    Point *result = malloc(sizeof(Point));
+    result->x = makeodd(rand() % size);
+    result->y = makeodd(rand() % size);
+
+    if (map[result->x][result->y] == Empty) {
+        return result;
+    } else {
+        assert(0);
+    }
+}
