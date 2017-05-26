@@ -1,6 +1,4 @@
-#include <stdlib.h>
-#include <assert.h>
-
+/* Types */
 typedef enum {
     up, down, left, right
 } Direction;
@@ -20,6 +18,7 @@ typedef struct {
     Entry *next;
 } List;
 
+/* Prototypes */
 int isEmpty(List *list);
 List *nlist();
 void add(List *list, unsigned x, unsigned y, Direction dir);

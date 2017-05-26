@@ -1,5 +1,6 @@
 #include "list.h"
-
+#include <stdlib.h>
+#include <assert.h>
 
 int isEmpty(List *list) {
     return list->length == 0;
@@ -24,10 +25,8 @@ void add(List *list, unsigned x, unsigned y, Direction dir) {
 
 Entry *getrandom(List *list) {
     assert(!isEmpty(list));
-
     int n = rand() % list->length;
     Entry *current = list->next;
-
     if (n == 0) {
         list->next = current->next;
         current->next = NULL;
