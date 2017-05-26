@@ -2,16 +2,19 @@ obj_dir = bin
 src_dir = src
 
 ifeq ($(OS), Windows_NT) 
-	CFLAGS = -lpdcurses
+	CURFLAGS = -lpdcurses
 else
-	CFLAGS = -lncurses
+	CURFLAGS = -lncurses
 endif
 
-all: test.o
-	gcc -Wall $(obj_dir)/test.o -o $(obj_dir)/test $(CFLAGS)
+all: labyrinth.o stack.o
+	gcc -Wall $(obj_dir)/labyrinth.o $(obj_dir)/stack.o -o $(obj_dir)/labyrinth $(CURFLAGS)
 
-test.o: $(src_dir)/test.c
-	gcc -c -Wall -o $(obj_dir)/test.o $(src_dir)/test.c
+labyrinth.o: $(src_dir)/labyrinth.c $(src_dir)/stack.h
+	gcc -c -Wall -o $(obj_dir)/labyrinth.o $(src_dir)/labyrinth.c
+
+stack.o: $(src_dir)/stack.c $(src_dir)/stack.h
+	gcc -c -Wall -o $(obj_dir)/stack.o $(src_dir)/stack.c
 
 clean:
 	rm -f $(obj_dir)/*

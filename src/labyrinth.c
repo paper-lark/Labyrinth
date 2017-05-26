@@ -1,6 +1,6 @@
 #include <string.h>
-#include <assert.h>
 #include <stdlib.h>
+#include "stack.h"
 
 #if defined _WIN64 || defined _WIN32
     #include <curses.h>
@@ -23,6 +23,7 @@ int menu(const int width, const int height);
 int play(const int width, const int height);
 State **create_labyrinth(const unsigned size);
 void show(WINDOW *game_scene, State **map, const unsigned size);
+void free_m(State **map, const unsigned size);
 
 int main(void) {
     /* Init */
@@ -59,21 +60,27 @@ int play(const int width, const int height) {
     show(game_scene, map, size);
     mvwprintw(log_scene, 0, 0, "Log:");
     wrefresh(log_scene);
-    free(map);
+    free_m(map, size);
     return 0;
 }
 
 State **create_labyrinth(const unsigned size) {
+
+    /* Init */
     State **map = malloc(size * sizeof(void *));
     for (int i = 0; i < size; i++) {
         map[i] = malloc(size * sizeof(State));
     }
-
     bool isVisited[size][size];
     for (int y = 0; y < size; y++)
         for (int x = 0; x < size; x++)
             isVisited[x][y] = false;
+    Stack *stack = new_stack();
+    Point *current = malloc(sizeof(Point));
+    current->x = rand() % size;
+    current->y = rand() & size;
 
+    /* Build */
     for (int y = 0; y < size; y++)
         for (int x = 0; x < size; x++)
             if (!isVisited[x][y])
@@ -102,4 +109,11 @@ void show(WINDOW *game_scene, State **map, const unsigned size) {
         }
     }
     wrefresh(game_scene);
+}
+
+void free_m(State **map, const unsigned size) {
+    for (int i = 0; i < size; i++) {
+        free(map[i]);
+    }
+    free(map);
 }
