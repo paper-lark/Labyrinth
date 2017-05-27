@@ -104,6 +104,7 @@ void init_game(const int width, const int height) {
     const unsigned size = makeodd(min(height - 2, width, MAX_SIZE));
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *game_scene = newwin(size, size, 0, (width - size) / 2);
+    WINDOW *log_scene = newwin(1, width, height - 2, 0);
     WINDOW *info_scene = newwin(1, width, height - 1, 0);
     keypad(log_scene, TRUE);
 
@@ -117,6 +118,9 @@ void init_game(const int width, const int height) {
     /* Show scenes */
     wrefresh(background_scene);
     show_game(game_scene, map, fog, size, player, pexit);
+    char buffer[100]; //::DEBUG
+    sprintf(buffer, "Player: %d %d, Exit: %d %d", player->x, player->y, pexit->x, pexit->y); //::DEBUG
+    write_log(log_scene, buffer); //::DEBUG
 
     /* Logic */
     Point *target = malloc(sizeof(Point));
@@ -139,15 +143,24 @@ void init_game(const int width, const int height) {
                 target->x = player->x + 1;
                 target->y = player->y;
                 break;
+            default:
+                write_log(log_scene, "Invalid output");
         }
         if (isInside(target->x, target->y, size) && map[target->x][target->y] == Empty) {
             player->x = target->x;
             player->y = target->y;
             reveal(fog, player, size);
             show_game(game_scene, map, fog, size, player, pexit);
+            //write_log(log_scene, "Successfully moved");
+            char buffer[100]; //::DEBUG
+            sprintf(buffer, "Player: %d %d, Exit: %d %d", player->x, player->y, pexit->x, pexit->y); //::DEBUG
+            write_log(log_scene, buffer); //::DEBUG
+        } else {
+            write_log(log_scene, "Destination is blocked");
         }
-    }
-    write_info(info_scene, "<Exit Reached. Press any key to continue>");
+    } 
+    write_log(log_scene, "Exit reached");
+    write_info(info_scene, "<Press any key to return to menu>");
     wgetch(info_scene);
 
     /* Free memory */
@@ -182,6 +195,13 @@ void show_game(WINDOW *game_scene, State **map, Hidden **fog, const unsigned siz
     if (fog[pexit->x][pexit->y] == 1)
         mvwaddch(game_scene, pexit->y, pexit->x, EXIT);
     wrefresh(game_scene);
+}
+
+void write_log(WINDOW *log_scene, char *msg) {
+    wclear(log_scene);
+    mvwprintw(log_scene, 0, 0, "Log: ");
+    wprintw(log_scene, msg);
+    wrefresh(log_scene);
 }
 
 void write_info(WINDOW *info_scene, char *msg) {
