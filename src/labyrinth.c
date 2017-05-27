@@ -38,7 +38,7 @@
 #endif
 
 /* MACRO */
-#define VERSION "Version 1.1.0"
+#define VERSION "Version 1.1.1"
 #define MAX_SIZE 30
 #define PLAYER 'o'
 #define WALL '#'
@@ -54,9 +54,10 @@ void menu(const int width, const int height);
 void init_game(const int width, const int height);
 void init_help(const int width, const int height);
 void init_about(const int width, const int height);
+void init_exit(const int width, const int height);
 void show_game(WINDOW *game_scene, State **map, Hidden **fog, const unsigned size, const Point *player, const Point *pexit);
 void write_info(WINDOW *info_scene, char *msg);
-void show_menu(WINDOW* background_scene, WINDOW *menu_scene, const char *entries[], const unsigned length, const int hlt) ;
+void show_menu(WINDOW* background_scene, WINDOW *menu_scene, const char *entries[], const unsigned length, const int hlt);
 
 /* Implementation */
 int main(void) {
@@ -74,8 +75,8 @@ int main(void) {
         init_color(COLOR_BLACK, 30, 30, 30);
     }
     init_pair(1, COLOR_WHITE, COLOR_BLACK); // Menu
-    init_pair(2, COLOR_CYAN, COLOR_BLACK); // Player
-    init_pair(3, COLOR_MAGENTA, COLOR_BLACK); // Walls
+    init_pair(2, COLOR_MAGENTA, COLOR_BLACK); // Player
+    init_pair(3, COLOR_GREEN, COLOR_BLACK); // Walls
     init_pair(4, COLOR_YELLOW, COLOR_BLACK); // Exit
     init_pair(5, COLOR_RED, COLOR_BLACK); // Heart
 
@@ -136,7 +137,7 @@ void menu(const int width, const int height) {
             show_menu(background_scene, menu_scene, entries, length, highlight);
             choice = -1;
         } else if (choice == 3) { // Exit
-            //::TODO Add goodbye screen
+            init_exit(width, height);
             break;
         }
     }
@@ -338,4 +339,23 @@ void init_about(const int width, const int height) {
 
     wrefresh(about_scene);
     wgetch(about_scene);
+}
+
+void init_exit(const int width, const int height) {
+    const unsigned mwidth = 64, mheight = 12;
+    WINDOW *background_scene = newwin(height, width, 0, 0);
+    wrefresh(background_scene);
+    assert(width >= mwidth && height >= mheight);
+
+    WINDOW *exit_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
+    keypad(exit_scene, TRUE);
+    wattron(exit_scene, COLOR_PAIR(1));
+    box(exit_scene, 0, 0);
+
+    mvwprintw(exit_scene, 3, (mwidth - 24) / 2, "Hope you had some fun :)");
+    mvwprintw(exit_scene, 4, (mwidth - 30) / 2, "Have a lovely day and see you!");
+    mvwprintw(exit_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to quit>");
+
+    wrefresh(exit_scene);
+    wgetch(exit_scene);
 }
