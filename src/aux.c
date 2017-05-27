@@ -5,7 +5,34 @@
 #include <assert.h>
 #define isInside(x, y, size) (x >= 0) && (y >= 0) && (y < size) && (x < size)
 
-void free_m(State **map, const unsigned size) {
+State **create_st(const unsigned size) {
+    State **map = malloc(size * sizeof(void *));
+    for (int i = 0; i < size; i++) {
+        map[i] = malloc(size * sizeof(State));
+        for(int j = 0; j < size; j++)
+            map[i][j] = Wall;
+    }
+    return map;
+}
+
+Hidden **create_hid(const unsigned size) {
+    Hidden **map = malloc(size * sizeof(void *));
+    for (int i = 0; i < size; i++) {
+        map[i] = malloc(size * sizeof(Hidden));
+        for(int j = 0; j < size; j++)
+            map[i][j] = 0;
+    }
+    return map;
+}
+
+void free_st(State **map, const unsigned size) {
+    for (int i = 0; i < size; i++) {
+        free(map[i]);
+    }
+    free(map);
+}
+
+void free_hid(Hidden **map, const unsigned size) {
     for (int i = 0; i < size; i++) {
         free(map[i]);
     }
@@ -20,20 +47,10 @@ unsigned makeodd(unsigned x) {
     }
 }
 
-State **create_m(const unsigned size) {
-    State **map = malloc(size * sizeof(void *));
-    for (int i = 0; i < size; i++) {
-        map[i] = malloc(size * sizeof(State));
-        for(int j = 0; j < size; j++)
-            map[i][j] = Wall;
-    }
-    return map;
-}
-
 State **create_labyrinth(const unsigned size) {
 
     /* Init map */
-    State **map = create_m(size);
+    State **map = create_st(size);
 
     /* Init auxiliary values */
     List *walls = nlist(); // Wall list
@@ -114,10 +131,16 @@ Point *rand_position(State **map, const unsigned size) {
     Point *result = malloc(sizeof(Point));
     result->x = makeodd(rand() % size);
     result->y = makeodd(rand() % size);
+    return result;
+}
 
-    if (map[result->x][result->y] == Empty) {
-        return result;
-    } else {
-        assert(0);
-    }
+void reveal(Hidden **fog, const Point *player, const unsigned size) {
+    fog[player->x + 1][player->y] = 1;
+    fog[player->x - 1][player->y] = 1;
+    fog[player->x][player->y + 1] = 1;
+    fog[player->x][player->y - 1] = 1;
+    fog[player->x - 1][player->y - 1] = 1;
+    fog[player->x + 1][player->y - 1] = 1;
+    fog[player->x - 1][player->y + 1] = 1;
+    fog[player->x + 1][player->y + 1] = 1;
 }
