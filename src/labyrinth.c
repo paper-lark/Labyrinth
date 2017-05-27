@@ -1,5 +1,5 @@
 /* Headers */
-#include "aux.h"
+#include "auxiliary.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>

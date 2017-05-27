@@ -1,4 +1,4 @@
-#include "aux.h"
+#include "auxiliary.h"
 #include <time.h>
 #include <stdlib.h>
 #include "list.h"
