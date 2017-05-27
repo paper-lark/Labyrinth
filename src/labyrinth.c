@@ -127,7 +127,7 @@ void menu(const int width, const int height) {
 void init_game(const int width, const int height) {
 
     /* Init scenes */
-    const unsigned size = makeodd(min(height - 2, width, MAX_SIZE));
+    const unsigned size = makeodd(min(height - 1, width, MAX_SIZE));
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *game_scene = newwin(size, size, 0, (width - size) / 2);
     WINDOW *info_scene = newwin(1, width, height - 1, 0);
@@ -240,6 +240,8 @@ void show_menu(WINDOW *background_scene, WINDOW *menu_scene, const char *entries
 void init_help(const int width, const int height) {
     const unsigned mwidth = 60, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
+    wrefresh(background_scene);
+    assert(width >= mwidth && height >= mheight);
     WINDOW *help_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(help_scene, TRUE);
     box(help_scene, 0, 0);
@@ -258,7 +260,6 @@ void init_help(const int width, const int height) {
     mvwprintw(help_scene, 10, 3, "Here's hoping you'll like it :)");
     mvwprintw(help_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to return>");
 
-    wrefresh(background_scene);
     wrefresh(help_scene);
     wgetch(help_scene);
 }
@@ -266,6 +267,8 @@ void init_help(const int width, const int height) {
 void init_about(const int width, const int height) {
     const unsigned mwidth = 60, mheight = 12;
     WINDOW *background_scene = newwin(height, width, 0, 0);
+    wrefresh(background_scene);
+    assert(width >= mwidth && height >= mheight);
     WINDOW *about_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(about_scene, TRUE);
     box(about_scene, 0, 0);
@@ -281,7 +284,6 @@ void init_about(const int width, const int height) {
     mvwprintw(about_scene, 8, (mwidth - 13) / 2, "Version 1.0.0");
     mvwprintw(about_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to return>");
 
-    wrefresh(background_scene);
     wrefresh(about_scene);
     wgetch(about_scene);
 }
