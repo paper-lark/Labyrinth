@@ -264,7 +264,7 @@ void init_about(const int width, const int height) {
     wattroff(about_scene, A_BOLD);
 
     mvwprintw(about_scene, 3, (mwidth - 16) / 2, "A labyrinth game"); //::TODO Add license
-    //mvwprintw(about_scene, 4, (mwidth - 50) / 2, "Huge thanks to my best friend, Migle Kucinskaite <3");
+    mvwprintw(about_scene, 4, (mwidth - 50) / 2, "Huge thanks to my best friend, Migle Kucinskaite <3");
     mvwprintw(about_scene, 5, (mwidth - 24) / 2, "Created by Max Zhuravsky");
     mvwprintw(about_scene, 6, (mwidth - 12) / 2, "Moscow, 2017");
     mvwprintw(about_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to return>");

@@ -27,7 +27,6 @@ void init_game(const int width, const int height);
 void init_help(const int width, const int height);
 void init_about(const int width, const int height);
 void show_game(WINDOW *game_scene, State **map, Hidden **fog, const unsigned size, const Point *player, const Point *pexit);
-void write_log(WINDOW *log_scene, char *msg);
 void write_info(WINDOW *info_scene, char *msg);
 void show_menu(WINDOW* background_scene, WINDOW *menu_scene, const char *entries[], const unsigned length, const int hlt) ;
 
@@ -37,7 +36,7 @@ int main(void) {
     initscr();
     noecho();
     cbreak(); 
-    //curs_set(0);
+    curs_set(0);
     refresh();
     const int width = getmaxx(stdscr), height = getmaxy(stdscr);
     menu(width, height);
@@ -105,7 +104,7 @@ void init_game(const int width, const int height) {
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *game_scene = newwin(size, size, 0, (width - size) / 2);
     WINDOW *info_scene = newwin(1, width, height - 1, 0);
-    keypad(log_scene, TRUE);
+    keypad(game_scene, TRUE);
 
     /* Create labyrinth */
     State **map = create_labyrinth(size);
@@ -121,7 +120,7 @@ void init_game(const int width, const int height) {
     /* Logic */
     Point *target = malloc(sizeof(Point));
     while (player->x != pexit->x || player->y != pexit->y) {
-        int in = wgetch(log_scene);
+        int in = wgetch(game_scene);
         switch (in) {
             case KEY_DOWN:
                 target->x = player->x;
@@ -233,8 +232,9 @@ void init_help(const int width, const int height) {
 
     wgetch(help_scene);
 }
+
 void init_about(const int width, const int height) {
-    const unsigned mwidth = 60, mheight = 10;
+    const unsigned mwidth = 60, mheight = 12;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *about_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     box(about_scene, 0, 0);
@@ -244,9 +244,10 @@ void init_about(const int width, const int height) {
     wattroff(about_scene, A_BOLD);
 
     mvwprintw(about_scene, 3, (mwidth - 16) / 2, "A labyrinth game"); //::TODO Add license
-    //mvwprintw(about_scene, 4, (mwidth - 50) / 2, "Huge thanks to my best friend, Migle Kucinskaite <3");
+    mvwprintw(about_scene, 4, (mwidth - 50) / 2, "Huge thanks to my best friend, Migle Kucinskaite <3");
     mvwprintw(about_scene, 5, (mwidth - 24) / 2, "Created by Max Zhuravsky");
     mvwprintw(about_scene, 6, (mwidth - 12) / 2, "Moscow, 2017");
+    mvwprintw(about_scene, 8, (mwidth - 13) / 2, "Version 1.0.0");
     mvwprintw(about_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to return>");
 
     wgetch(about_scene);
