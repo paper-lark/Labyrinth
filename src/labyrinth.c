@@ -38,6 +38,7 @@
 #endif
 
 /* MACRO */
+#define VERSION "Version 1.1.0"
 #define MAX_SIZE 30
 #define PLAYER 'o'
 #define WALL '#'
@@ -65,6 +66,20 @@ int main(void) {
     cbreak(); 
     curs_set(0);
     refresh();
+
+    /* Init Colors */
+    start_color();
+    if (can_change_color()) {
+        init_color(COLOR_RED, 900, 0, 0);
+        init_color(COLOR_BLACK, 30, 30, 30);
+    }
+    init_pair(1, COLOR_WHITE, COLOR_BLACK); // Menu
+    init_pair(2, COLOR_CYAN, COLOR_BLACK); // Player
+    init_pair(3, COLOR_MAGENTA, COLOR_BLACK); // Walls
+    init_pair(4, COLOR_YELLOW, COLOR_BLACK); // Exit
+    init_pair(5, COLOR_RED, COLOR_BLACK); // Heart
+
+    /* Start */
     const int width = getmaxx(stdscr), height = getmaxy(stdscr);
     menu(width, height);
 
@@ -85,6 +100,7 @@ void menu(const int width, const int height) {
                             "About",
                             "Exit"};
     const unsigned length = 4;
+    wattron(menu_scene, COLOR_PAIR(1));
     show_menu(background_scene, menu_scene, entries, length, highlight);
 
     /* Get the choice */
@@ -106,14 +122,17 @@ void menu(const int width, const int height) {
 
         if (choice == 0) { // Play
             init_game(width, height);
+            //wattron(menu_scene, COLOR_PAIR(1));
             show_menu(background_scene, menu_scene, entries, length, highlight);
             choice = -1;
         } else if (choice == 1) { // Help
             init_help(width, height);
+            //wattron(menu_scene, COLOR_PAIR(1));
             show_menu(background_scene, menu_scene, entries, length, highlight);
             choice = -1;
         } else if (choice == 2) { // About
             init_about(width, height);
+            //wattron(menu_scene, COLOR_PAIR(1));
             show_menu(background_scene, menu_scene, entries, length, highlight);
             choice = -1;
         } else if (choice == 3) { // Exit
@@ -173,8 +192,12 @@ void init_game(const int width, const int height) {
             show_game(game_scene, map, fog, size, player, pexit);
         }
     }
-    write_info(info_scene, "<Exit Reached. Press any key to continue>");
-    wgetch(info_scene);
+    write_info(info_scene, "<Exit Reached. Press ENTER to continue>");
+    while (TRUE) {
+        int in = wgetch(info_scene);
+        if (in == 10)
+            break;
+    }
 
     /* Free memory */
     free_st(map, size);
@@ -194,19 +217,37 @@ void show_game(WINDOW *game_scene, State **map, Hidden **fog, const unsigned siz
                         waddch(game_scene, EMPTY);
                         break;
                     case Wall:
+                        wattron(game_scene, COLOR_PAIR(3));
                         waddch(game_scene, WALL);
+                        wattroff(game_scene, COLOR_PAIR(3));
                         break;
                     default:
                         assert(0);
                 }
             } else {
+                wattron(game_scene, COLOR_PAIR(1));
                 waddch(game_scene, UNKNOWN);
+                wattroff(game_scene, COLOR_PAIR(1));
             }
         }
     }
-    mvwaddch(game_scene, player->y, player->x, PLAYER);
-    if (fog[pexit->x][pexit->y] == 1)
+
+    {
+        wattron(game_scene, A_BOLD);
+        wattron(game_scene, COLOR_PAIR(2));
+        mvwaddch(game_scene, player->y, player->x, PLAYER);
+        wattroff(game_scene, COLOR_PAIR(2));
+        wattroff(game_scene, A_BOLD);
+    }
+
+    if (fog[pexit->x][pexit->y] == 1) {
+        wattron(game_scene, A_BOLD);
+        wattron(game_scene, COLOR_PAIR(4));
         mvwaddch(game_scene, pexit->y, pexit->x, EXIT);
+        wattroff(game_scene, COLOR_PAIR(4)); 
+        wattroff(game_scene, A_BOLD);
+    }
+
     wrefresh(game_scene);
 }
 
@@ -223,7 +264,7 @@ void show_menu(WINDOW *background_scene, WINDOW *menu_scene, const char *entries
     const unsigned x = getmaxx(menu_scene);
     box(menu_scene, 0, 0);
     wattron(menu_scene, A_BOLD);
-    mvwprintw(menu_scene, 1, (x - 4) / 2, "Menu");
+    mvwprintw(menu_scene, 1, (x - 9) / 2, "Labyrinth");
     wattroff(menu_scene, A_BOLD);
     for (unsigned i = 0; i < length; i++) {
         if (hlt == i) {
@@ -238,12 +279,14 @@ void show_menu(WINDOW *background_scene, WINDOW *menu_scene, const char *entries
 }
 
 void init_help(const int width, const int height) {
-    const unsigned mwidth = 60, mheight = 15;
+    const unsigned mwidth = 64, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     wrefresh(background_scene);
     assert(width >= mwidth && height >= mheight);
+
     WINDOW *help_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(help_scene, TRUE);
+    wattron(help_scene, COLOR_PAIR(1));
     box(help_scene, 0, 0);
 
     wattron(help_scene, A_BOLD);
@@ -251,7 +294,7 @@ void init_help(const int width, const int height) {
     wattroff(help_scene, A_BOLD);
 
     mvwprintw(help_scene, 3, 3, "Hey there, young (well, maybe not) labyrinth explorer!");
-    mvwprintw(help_scene, 4, 3, "Here's a brief legend for you so you wouldn't get lost:");
+    mvwprintw(help_scene, 4, 3, "Here's a brief legend for you, so you wouldn't get lost :)");
     mvwprintw(help_scene, 5, 7, "%c - player", PLAYER);
     mvwprintw(help_scene, 6, 7, "%c - fog", UNKNOWN);
     mvwprintw(help_scene, 7, 7, "%c - wall", WALL);
@@ -265,12 +308,14 @@ void init_help(const int width, const int height) {
 }
 
 void init_about(const int width, const int height) {
-    const unsigned mwidth = 60, mheight = 12;
+    const unsigned mwidth = 64, mheight = 12;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     wrefresh(background_scene);
     assert(width >= mwidth && height >= mheight);
+
     WINDOW *about_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(about_scene, TRUE);
+    wattron(about_scene, COLOR_PAIR(1));
     box(about_scene, 0, 0);
 
     wattron(about_scene, A_BOLD);
@@ -278,10 +323,17 @@ void init_about(const int width, const int height) {
     wattroff(about_scene, A_BOLD);
 
     mvwprintw(about_scene, 3, (mwidth - 16) / 2, "A labyrinth game"); //::TODO Add license
-    mvwprintw(about_scene, 4, (mwidth - 50) / 2, "Huge thanks to my best friend, Migle Kucinskaite <3");
+    mvwprintw(about_scene, 4, (mwidth - 50) / 2, "Huge thanks to my best friend, Migle Kucinskaite ");
+    {
+        wattron(about_scene, COLOR_PAIR(5));
+        wattron(about_scene, A_BOLD);
+        wprintw(about_scene, "<3");
+        wattroff(about_scene, COLOR_PAIR(5));
+        wattroff(about_scene, A_BOLD);
+    }
     mvwprintw(about_scene, 5, (mwidth - 24) / 2, "Created by Max Zhuravsky");
     mvwprintw(about_scene, 6, (mwidth - 12) / 2, "Moscow, 2017");
-    mvwprintw(about_scene, 8, (mwidth - 13) / 2, "Version 1.0.0");
+    mvwprintw(about_scene, 8, (mwidth - 13) / 2, VERSION);
     mvwprintw(about_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to return>");
 
     wrefresh(about_scene);
