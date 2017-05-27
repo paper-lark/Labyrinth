@@ -230,6 +230,8 @@ void init_help(const int width, const int height) {
     mvwprintw(help_scene, 10, 3, "Here's hoping you'll like it :)");
     mvwprintw(help_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to return>");
 
+    wrefresh(background_scene);
+    wrefresh(help_scene);
     wgetch(help_scene);
 }
 
@@ -250,5 +252,7 @@ void init_about(const int width, const int height) {
     mvwprintw(about_scene, 8, (mwidth - 13) / 2, "Version 1.0.0");
     mvwprintw(about_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to return>");
 
+    wrefresh(background_scene);
+    wrefresh(about_scene);
     wgetch(about_scene);
 }
