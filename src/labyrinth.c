@@ -214,6 +214,7 @@ void init_help(const int width, const int height) {
     const unsigned mwidth = 60, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *help_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
+    keypad(help_scene, TRUE);
     box(help_scene, 0, 0);
 
     wattron(help_scene, A_BOLD);
@@ -239,6 +240,7 @@ void init_about(const int width, const int height) {
     const unsigned mwidth = 60, mheight = 12;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *about_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
+    keypad(about_scene, TRUE);
     box(about_scene, 0, 0);
 
     wattron(about_scene, A_BOLD);
