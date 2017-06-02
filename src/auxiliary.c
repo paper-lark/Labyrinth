@@ -48,7 +48,7 @@ Hidden **create_hid(const unsigned size) {
     for (int i = 0; i < size; i++) {
         map[i] = malloc(size * sizeof(Hidden));
         for(int j = 0; j < size; j++)
-            map[i][j] = 1; //::DEBUG 0
+            map[i][j] = 0;
     }
     return map;
 }

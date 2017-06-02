@@ -123,17 +123,14 @@ void menu(const int width, const int height) {
 
         if (choice == 0) { // Play
             init_game(width, height);
-            //wattron(menu_scene, COLOR_PAIR(1));
             show_menu(background_scene, menu_scene, entries, length, highlight);
             choice = -1;
         } else if (choice == 1) { // Help
             init_help(width, height);
-            //wattron(menu_scene, COLOR_PAIR(1));
             show_menu(background_scene, menu_scene, entries, length, highlight);
             choice = -1;
         } else if (choice == 2) { // About
             init_about(width, height);
-            //wattron(menu_scene, COLOR_PAIR(1));
             show_menu(background_scene, menu_scene, entries, length, highlight);
             choice = -1;
         } else if (choice == 3) { // Exit
@@ -309,7 +306,7 @@ void init_help(const int width, const int height) {
 }
 
 void init_about(const int width, const int height) {
-    const unsigned mwidth = 64, mheight = 12;
+    const unsigned mwidth = 64, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     wrefresh(background_scene);
     assert(width >= mwidth && height >= mheight);
@@ -323,7 +320,7 @@ void init_about(const int width, const int height) {
     mvwprintw(about_scene, 1, (mwidth - 4) / 2, "About");
     wattroff(about_scene, A_BOLD);
 
-    mvwprintw(about_scene, 3, (mwidth - 16) / 2, "A labyrinth game"); //::TODO Add license
+    mvwprintw(about_scene, 3, (mwidth - 16) / 2, "A labyrinth game");
     mvwprintw(about_scene, 4, (mwidth - 50) / 2, "Huge thanks to my best friend, Migle Kucinskaite ");
     {
         wattron(about_scene, COLOR_PAIR(5));
@@ -332,9 +329,10 @@ void init_about(const int width, const int height) {
         wattroff(about_scene, COLOR_PAIR(5));
         wattroff(about_scene, A_BOLD);
     }
-    mvwprintw(about_scene, 5, (mwidth - 24) / 2, "Created by Max Zhuravsky");
-    mvwprintw(about_scene, 6, (mwidth - 12) / 2, "Moscow, 2017");
-    mvwprintw(about_scene, 8, (mwidth - 13) / 2, VERSION);
+    mvwprintw(about_scene, 5, (mwidth - 41) / 2, "Software is distributed under MIT License");
+    mvwprintw(about_scene, 6, (mwidth - 24) / 2, "Created by Max Zhuravsky");
+    mvwprintw(about_scene, 7, (mwidth - 12) / 2, "Moscow, 2017");
+    mvwprintw(about_scene, 9, (mwidth - 13) / 2, VERSION);
     mvwprintw(about_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to return>");
 
     wrefresh(about_scene);
