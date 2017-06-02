@@ -15,13 +15,11 @@ Currently there are two known ways to run the game:
 * Run the executable for your system
 
 ### Installation: Build program
-Simply clone the repository and build it with the following:
+For this method make sure you have ```gcc``` compiler installed on your computer. On Windows I would recommend using **MinGW**. If you have the compiler installed, simply clone the repository and build it with the following:
 
     git clone https://github.com/paper-lark/labyrinth && cd labyrinth && make
     
 The executable can be found in the **bin/** folder.
-
-*P.S.* For this method make sure you have ```gcc``` compiler installed. On Windows I would recommend using **MinGW** to archieve that.
 
 *__Please note:__* The program depends on ```pdcurses``` (Windows) or ```ncurses``` (Linux, macOS) library. 
 Thus, make sure to install ```nucurses``` library if you are going to run the program on a Unix-like system;
