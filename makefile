@@ -47,4 +47,4 @@ auxiliary.o: $(src_dir)/auxiliary.c $(src_dir)/auxiliary.h
 	gcc -c -Wall -o $(obj_dir)/auxiliary.o $(src_dir)/auxiliary.c
 
 clean:
-	rm -f $(obj_dir)/*
+	rm -f $(obj_dir)/*.o

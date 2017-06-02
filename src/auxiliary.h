@@ -27,7 +27,7 @@
 
 /* Type */
 typedef enum {
-    Wall, Empty//, Player, Exit
+    Wall, Empty
 } State;
 
 typedef struct {

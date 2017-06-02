@@ -38,7 +38,7 @@
 #endif
 
 /* MACRO */
-#define VERSION "Version 1.1.1"
+#define VERSION "Version 1.2.0"
 #define MAX_SIZE 30
 #define PLAYER 'o'
 #define WALL '#'

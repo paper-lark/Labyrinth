@@ -31,6 +31,7 @@
 #include "list.h"
 #include <assert.h>
 #define isInside(x, y, size) (x >= 0) && (y >= 0) && (y < size) && (x < size)
+#define LOOPS 0.1500
 
 State **create_st(const unsigned size) {
     State **map = malloc(size * sizeof(void *));
@@ -47,7 +48,7 @@ Hidden **create_hid(const unsigned size) {
     for (int i = 0; i < size; i++) {
         map[i] = malloc(size * sizeof(Hidden));
         for(int j = 0; j < size; j++)
-            map[i][j] = 0;
+            map[i][j] = 1; //::DEBUG 0
     }
     return map;
 }
@@ -80,14 +81,15 @@ State **create_labyrinth(const unsigned size) {
     State **map = create_st(size);
 
     /* Init auxiliary values */
-    List *walls = nlist(); // Wall list
+    List *walls = nlist(); // List of walls
+    List *secondary = nlist(); // List of walls between visited chambers
     srand(time(0));
     unsigned cell_x = makeodd(rand() % size), cell_y = makeodd(rand() % size); // Initial cell coordinates
     unsigned wall_x, wall_y;
     Direction dir;
     
 
-    /* Build */
+    /* Build Prim's labyrinth */
     map[cell_x][cell_y] = Empty;
     if (isInside(cell_x - 1, cell_y, size) && isInside(cell_x - 2, cell_y, size)) { // Left
         add(walls, cell_x - 1, cell_y, left);
@@ -132,7 +134,7 @@ State **create_labyrinth(const unsigned size) {
                 assert(0);
         }
 
-        if (map[cell_x][cell_y] == Wall) {// If cell in the direction is a wall
+        if (map[cell_x][cell_y] == Wall) { // If cell in the direction is a wall
             map[wall_x][wall_y] = map[cell_x][cell_y] = Empty; // Mark both wall and destination empty
 
             if (isInside(cell_x - 1, cell_y, size) && isInside(cell_x - 2, cell_y, size) && map[cell_x - 2][cell_y] == Wall) { // Left
@@ -147,9 +149,27 @@ State **create_labyrinth(const unsigned size) {
             if (isInside(cell_x, cell_y + 1, size) && isInside(cell_x, cell_y + 2, size) && map[cell_x][cell_y + 2] == Wall) { // Down
                 add(walls, cell_x, cell_y + 1, down);
             }
+        } else if ((wall_y != 0) && (wall_y != size - 1) && (wall_x != 0) && (wall_x != size - 1)) {
+            add(secondary, wall_x, wall_y, dir);
         }
     }
+
+    /* Add loops */
+    unsigned cnt = secondary->length * LOOPS;
+    for (unsigned i = 0; i < cnt; i++) {
+        Entry *current = getrandom(secondary);
+        unsigned wall_x = current->value.x;
+        unsigned wall_y = current->value.y;
+        map[wall_x][wall_y] = Empty;
+        free(current);
+    }
+
+    while (!isEmpty(secondary)) {
+        Entry *current = getrandom(secondary);
+        free(current);
+    }
     free(walls);
+    free(secondary);
 
     return map;
 }
