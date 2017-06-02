@@ -24,8 +24,8 @@ The executable can be found in the **bin/** folder.
 *P.S.* For this method make sure you have ```gcc``` compiler installed. On Windows I would recommend using **MinGW** to archieve that.
 
 *__Please note:__* The program depends on ```pdcurses``` (Windows) or ```ncurses``` (Linux, macOS) library. 
-Thus, make sure to install ```nucurses``` library if you are going to run the program on Unix-like system;
-on Windows just make sure that ```pdcurses.dll``` library that is located in **bin/** folder is located in the same folder as the executable.
+Thus, make sure to install ```nucurses``` library if you are going to run the program on a Unix-like system;
+on Windows just make sure that ```pdcurses.dll``` library, that can be found in **bin/** folder, is located in the same folder as the executable.
 
 ### Installation: Run prebuilt executable
 Simply find the appropriate executable in the **bin/** folder: **labyrinth.mac** for macOS, 
