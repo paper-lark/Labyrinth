@@ -12,16 +12,17 @@ void init_help(const int width, const int height);
 void init_about(const int width, const int height);
 void init_exit(const int width, const int height);
 void write_info(WINDOW *info_scene, char *msg);
-void show_menu(WINDOW* background_scene, WINDOW *menu_scene, const char *entries[], const unsigned length, const int hlt);
+void show_menu(WINDOW* background_scene, WINDOW *menu_scene, const char *title, const char *entries[], const unsigned length, const int hlt);
 
 /* Implementation */
 void menu(const int width, const int height) {
     /* Init scene */
-    const unsigned mwidth = 30, mheight = 10;
+    const unsigned mwidth = 64, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *menu_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(menu_scene, TRUE);
     unsigned highlight = 0, choice = -1;
+    const char *title = "Labyrinth";
     const char *entries[] = { "Play",
                               "Settings",
                               "Help",
@@ -29,7 +30,7 @@ void menu(const int width, const int height) {
                               "Exit"};
     const unsigned length = 5;
     wattron(menu_scene, COLOR_PAIR(1));
-    show_menu(background_scene, menu_scene, entries, length, highlight);
+    show_menu(background_scene, menu_scene, title, entries, length, highlight);
 
     /* Get the choice */
     while (TRUE) {
@@ -46,24 +47,24 @@ void menu(const int width, const int height) {
                 break;
         }
 
-        show_menu(background_scene, menu_scene, entries, length, highlight);
+        show_menu(background_scene, menu_scene, title, entries, length, highlight);
 
         if (choice == 0) { // Play
             init_setup(width, height);
-            show_menu(background_scene, menu_scene, entries, length, highlight);
+            show_menu(background_scene, menu_scene, title, entries, length, highlight);
             cbreak();
             choice = -1;
         } else if (choice == 1) { // Settings
             init_settings(width, height);
-            show_menu(background_scene, menu_scene, entries, length, highlight);
+            show_menu(background_scene, menu_scene, title, entries, length, highlight);
             choice = -1;
         } else if (choice == 2) { // Help
             init_help(width, height);
-            show_menu(background_scene, menu_scene, entries, length, highlight);
+            show_menu(background_scene, menu_scene, title, entries, length, highlight);
             choice = -1;
         } else if (choice == 3) { // About
             init_about(width, height);
-            show_menu(background_scene, menu_scene, entries, length, highlight);
+            show_menu(background_scene, menu_scene, title, entries, length, highlight);
             choice = -1;
         } else if (choice == 4) { // Exit
             init_exit(width, height);
@@ -80,13 +81,13 @@ void write_info(WINDOW *info_scene, char *msg) {
     wrefresh(info_scene);
 }
 
-void show_menu(WINDOW *background_scene, WINDOW *menu_scene, const char *entries[], const unsigned length, const int hlt) {
+void show_menu(WINDOW *background_scene, WINDOW *menu_scene, const char *title, const char *entries[], const unsigned length, const int hlt) {
     wclear(background_scene);
     wrefresh(background_scene);
     const unsigned x = getmaxx(menu_scene);
     box(menu_scene, 0, 0);
     wattron(menu_scene, A_BOLD);
-    mvwprintw(menu_scene, 1, (x - 9) / 2, "Labyrinth");
+    mvwprintw(menu_scene, 1, (x - strlen(title)) / 2, title);
     wattroff(menu_scene, A_BOLD);
     for (unsigned i = 0; i < length; i++) {
         if (hlt == i) {
@@ -104,7 +105,6 @@ void init_help(const int width, const int height) {
     const unsigned mwidth = 64, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     wrefresh(background_scene);
-    assert(width >= mwidth && height >= mheight);
 
     WINDOW *help_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(help_scene, TRUE);
@@ -134,7 +134,7 @@ void init_about(const int width, const int height) {
     const unsigned mwidth = 64, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     wrefresh(background_scene);
-    assert(width >= mwidth && height >= mheight);
+    //assert(width >= mwidth && height >= mheight);
 
     WINDOW *about_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(about_scene, TRUE);
@@ -165,10 +165,10 @@ void init_about(const int width, const int height) {
 }
 
 void init_exit(const int width, const int height) {
-    const unsigned mwidth = 64, mheight = 12;
+    const unsigned mwidth = 64, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     wrefresh(background_scene);
-    assert(width >= mwidth && height >= mheight);
+    //assert(width >= mwidth && height >= mheight);
 
     WINDOW *exit_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(exit_scene, TRUE);
@@ -184,7 +184,7 @@ void init_exit(const int width, const int height) {
 }
 
 void init_settings(const int width, const int height) {
-    const unsigned mwidth = 64, mheight = 12;
+    const unsigned mwidth = 64, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     wrefresh(background_scene);
     assert(width >= mwidth && height >= mheight);
@@ -204,6 +204,39 @@ void init_settings(const int width, const int height) {
 }
 
 void init_setup(const int width, const int height) {
-    //::ToDo Add pre-game setup
-    init_game(width, height);
+    /* Init scene */
+    const unsigned mwidth = 30, mheight = 15;
+    WINDOW *background_scene = newwin(height, width, 0, 0);
+    WINDOW *setup_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
+    keypad(setup_scene, TRUE);
+    unsigned highlight = 0, choice = -1;
+    const char *title = "Select Game Mode";
+    const char *entries[] = { "Single Player",
+                              "Hotseat",
+                              "Multiplayer"};
+    const unsigned length = 3;
+    wattron(setup_scene, COLOR_PAIR(1));
+    show_menu(background_scene, setup_scene, title, entries, length, highlight);
+
+    /* Get the choice */
+    while (choice == -1) {
+        int in = wgetch(setup_scene);
+        switch (in) {
+            case KEY_DOWN:
+                highlight = (highlight + 1) % length;
+                break;
+            case KEY_UP:
+                highlight = (highlight + length - 1) % length;
+                break;
+            case 10:
+                choice = highlight;
+                break;
+        }
+        show_menu(background_scene, setup_scene, title, entries, length, highlight);
+    }
+    if (choice == Hotseat || choice == SinglePlayer) {
+        init_game(width, height, choice);
+    } else {
+        //::ToDo Establish connection and start the game
+    }
 }

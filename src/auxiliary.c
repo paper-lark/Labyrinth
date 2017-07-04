@@ -188,6 +188,7 @@ Point *pointat(const unsigned x, const unsigned y) {
 }
 
 void reveal(Hidden **fog, const Point *player, const unsigned size_x, const unsigned size_y) {
+    fog[player->x][player->y] = 1;
     fog[player->x + 1][player->y] = 1;
     fog[player->x - 1][player->y] = 1;
     fog[player->x][player->y + 1] = 1;

@@ -18,8 +18,9 @@
 #define min3(x, y, z) min2(x, min2(y, z))
 
 /* Prototypes */
-
-//void show_game(WINDOW *game_scene, State **map, Hidden **fog, const unsigned size, const Point *player, const Point *pexit, const Point *minotaur);
-void init_game(const int width, const int height);
+typedef enum {
+    SinglePlayer = 0, Hotseat = 1, Multiplayer = 2
+} GameMode;
+void init_game(const int width, const int height, const GameMode mode);
 
 #endif

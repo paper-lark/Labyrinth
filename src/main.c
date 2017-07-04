@@ -51,11 +51,17 @@ int main(void) {
     init_pair(5, COLOR_RED, COLOR_BLACK); // Minotaur
     init_pair(6, COLOR_RED, COLOR_BLACK); // Heart
 
-    /* Start */
+    /* Check for proper size of the window and start */
     const int width = getmaxx(stdscr), height = getmaxy(stdscr);
-    menu(width, height);
-
-    /* Epilogue */
-    endwin();
+    if (width < MIN_WIDTH || height < MIN_HEIGHT) {
+        endwin();
+        fprintf(stderr, "Looks like your terminal is way too small.\nWe need at least a %dx%d screen for the app to work properly.\nSorry about that :c\n", 
+                MIN_WIDTH, MIN_HEIGHT);
+        exit(1);
+    } else {
+        menu(width, height);
+        endwin();
+    }
+    
     return 0;
 }

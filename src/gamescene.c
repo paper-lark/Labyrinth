@@ -38,15 +38,6 @@ void show_game(WINDOW *game_scene, State **map, Hidden **fog, const Point *size,
         wattroff(game_scene, A_BOLD);
     }
 
-    /* Show minotaur if he is present */
-    if (minotaur && fog[minotaur->x][minotaur->y] == 1) {
-        wattron(game_scene, A_BOLD);
-        wattron(game_scene, COLOR_PAIR(5));
-        mvwaddch(game_scene, minotaur->y, minotaur->x, MINOTAUR);
-        wattroff(game_scene, COLOR_PAIR(5)); 
-        wattroff(game_scene, A_BOLD);
-    }
-
     /* Show exit */
     if (fog[door->x][door->y] == 1) {
         wattron(game_scene, A_BOLD);
@@ -56,10 +47,19 @@ void show_game(WINDOW *game_scene, State **map, Hidden **fog, const Point *size,
         wattroff(game_scene, A_BOLD);
     }
 
+    /* Show minotaur if he is present */
+    if (minotaur && fog[minotaur->x][minotaur->y] == 1) {
+        wattron(game_scene, A_BOLD);
+        wattron(game_scene, COLOR_PAIR(5));
+        mvwaddch(game_scene, minotaur->y, minotaur->x, MINOTAUR);
+        wattroff(game_scene, COLOR_PAIR(5)); 
+        wattroff(game_scene, A_BOLD);
+    }
+
     wrefresh(game_scene);
 }
 
-void init_game(const int width, const int height) {
+void init_game(const int width, const int height, const GameMode mode) {
 
     /* Init scene */
     const Point size = {.x = makeodd(width * 0.75), .y = makeodd(height - 4)};
@@ -73,9 +73,13 @@ void init_game(const int width, const int height) {
     State **map = create_labyrinth(size.x, size.y);
     Point *player = rand_position(map, size.x, size.y);
     Point *door = rand_position(map, size.x, size.y);
-    Point *minotaur = pointat(makeodd(size.x / 2), makeodd(size.y / 2));
+    Point *minotaur = NULL;
     Hidden **fog = create_hid(size.x, size.y);
     reveal(fog, player, size.x, size.y);
+    if (mode == Hotseat) {
+        minotaur = pointat(makeodd(size.x / 2), makeodd(size.y / 2));
+        reveal(fog, minotaur, size.x, size.y);
+    }
 
     /* Show scene */
     wrefresh(background_scene);
@@ -85,31 +89,33 @@ void init_game(const int width, const int height) {
     Point *target = malloc(sizeof(Point));
     while (TRUE) {
 
-        /* Move player */
+        /* Single Player */
         int input = wgetch(game_scene);
         switch (input) {
             case KEY_DOWN:
-                write_info(info_scene, "Move down");
+                write_info(info_scene, "Player down");
                 target->x = player->x;
                 target->y = player->y + 1;
                 break;
             case KEY_UP:
-                write_info(info_scene, "Move up");
+                write_info(info_scene, "Player up");
                 target->x = player->x;
                 target->y = player->y - 1;
                 break;
             case KEY_LEFT:
-                write_info(info_scene, "Move left");
+                write_info(info_scene, "Player left");
                 target->x = player->x - 1;
                 target->y = player->y;
                 break;
             case KEY_RIGHT:
-                write_info(info_scene, "Move right");
+                write_info(info_scene, "Player right");
                 target->x = player->x + 1;
                 target->y = player->y;
                 break;
             default:
                 write_info(info_scene, "Idling...");
+                target->x = player->x;
+                target->y = player->y;
         }
         if (isInside(target->x, target->y, size.x, size.y) && map[target->x][target->y] == Empty) {
             player->x = target->x;
@@ -118,10 +124,43 @@ void init_game(const int width, const int height) {
             show_game(game_scene, map, fog, &size, player, door, minotaur);
         }
 
-        /* Move minotaur */
-        //::ToDo
+        /* Hotseat Logic */
+        if (mode == Hotseat) {
+            switch (input) {
+                case 'S': case 's':
+                   write_info(info_scene, "Minotaur down");
+                   target->x = minotaur->x;
+                   target->y = minotaur->y + 1;
+                   break;
+                case 'W': case 'w':
+                    write_info(info_scene, "Minotaur up");
+                    target->x = minotaur->x;
+                    target->y = minotaur->y - 1;
+                    break;
+                case 'A': case 'a':
+                    write_info(info_scene, "Minotaur left");
+                    target->x = minotaur->x - 1;
+                    target->y = minotaur->y;
+                    break;
+                case 'D': case 'd':
+                    write_info(info_scene, "Minotaur right");
+                    target->x = minotaur->x + 1;
+                    target->y = minotaur->y;
+                    break;
+                default:
+                    write_info(info_scene, "Idling...");
+                    target->x = minotaur->x;
+                    target->y = minotaur->y;
+            }
+            if (isInside(target->x, target->y, size.x, size.y) && map[target->x][target->y] == Empty) {
+                minotaur->x = target->x;
+                minotaur->y = target->y;
+                reveal(fog, minotaur, size.x, size.y);
+                show_game(game_scene, map, fog, &size, player, door, minotaur);
+            }
+        }
 
-        /* Check conditions */
+        /* Check termination conditions */
         if (player->x == door->x && player->y == door->y) {
             /* Player won! */
             write_info(info_scene, "<Exit Reached. Congratulations! Press ENTER to continue>");
@@ -133,6 +172,7 @@ void init_game(const int width, const int height) {
         }
     }
     
+    /* Exit */
     while (TRUE) {
         int input = wgetch(info_scene);
         if (input == 10)

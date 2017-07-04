@@ -13,6 +13,7 @@
 
 /* MACRO */
 #define VERSION "Version 1.2.0"
-#define MIN_SIZE 30
+#define MIN_WIDTH 64
+#define MIN_HEIGHT 15
 
 #endif
