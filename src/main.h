@@ -1,0 +1,18 @@
+#ifndef MAIN_H
+#define MAIN_H
+
+/* Headers */
+#include <stdlib.h>
+#if defined _WIN64 || defined _WIN32
+    #include <curses.h>
+#elif defined __linux__
+    #include <ncurses.h>
+#elif defined __APPLE__
+    #include <ncursesw/ncurses.h>
+#endif
+
+/* MACRO */
+#define VERSION "Version 1.2.0"
+#define MIN_SIZE 30
+
+#endif

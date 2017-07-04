@@ -12,14 +12,14 @@ Tested under Ubuntu 16.04, Windows 10 and macOS 10.12.5.
 Currently there are two known ways to run the game:
 
 * Locally build the program
-* Run the executable for your system
+* Simply run the pre-built executable (this option may be unavailable at certain stages of development process, sorry for the inconvenience)
 
 ### Installation: Build program
 Simply clone the repository and build it with ```make```. The executable can be found in the ```bin/``` folder.
 
 *__Please note:__* The program depends on ```pdcurses``` (Windows) or ```ncurses``` (Linux, macOS) library. 
 Thus, make sure to install ```nucurses``` library if you are going to run the program on Unix-like system;
-on Windows just make sure that ```pdcurses.dll``` library that is located in ```bin/``` folder is located in the same folder as the executable.
+on Windows just make sure that ```pdcurses.dll``` library that can be found in ```bin/``` folder is located in the same folder as the executable.
 
 ### Installation: Run prebuilt executable
 Simply find the appropriate executable in the ```bin/``` folder: ```labyrinth.mac``` for macOS, 

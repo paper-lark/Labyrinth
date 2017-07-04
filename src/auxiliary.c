@@ -30,44 +30,43 @@
 #include <stdlib.h>
 #include "list.h"
 #include <assert.h>
-#define isInside(x, y, size) (x >= 0) && (y >= 0) && (y < size) && (x < size)
 #define LOOPS 0.1500
 
-State **create_st(const unsigned size) {
-    State **map = malloc(size * sizeof(void *));
-    for (int i = 0; i < size; i++) {
-        map[i] = malloc(size * sizeof(State));
-        for(int j = 0; j < size; j++)
+State **create_st(const unsigned size_x, const unsigned size_y) {
+    State **map = malloc(size_x * sizeof(void *));
+    for (int i = 0; i < size_x; i++) {
+        map[i] = malloc(size_y * sizeof(State));
+        for(int j = 0; j < size_y; j++)
             map[i][j] = Wall;
     }
     return map;
 }
 
-Hidden **create_hid(const unsigned size) {
-    Hidden **map = malloc(size * sizeof(void *));
-    for (int i = 0; i < size; i++) {
-        map[i] = malloc(size * sizeof(Hidden));
-        for(int j = 0; j < size; j++)
+Hidden **create_hid(const unsigned size_x, const unsigned size_y) {
+    Hidden **map = malloc(size_x * sizeof(void *));
+    for (int i = 0; i < size_x; i++) {
+        map[i] = malloc(size_y * sizeof(Hidden));
+        for(int j = 0; j < size_y; j++)
             map[i][j] = 0;
     }
     return map;
 }
 
-void free_st(State **map, const unsigned size) {
-    for (int i = 0; i < size; i++) {
+void free_st(State **map, const unsigned size_x) {
+    for (int i = 0; i < size_x; i++) {
         free(map[i]);
     }
     free(map);
 }
 
-void free_hid(Hidden **map, const unsigned size) {
-    for (int i = 0; i < size; i++) {
+void free_hid(Hidden **map, const unsigned size_x) {
+    for (int i = 0; i < size_x; i++) {
         free(map[i]);
     }
     free(map);
 }
 
-unsigned makeodd(unsigned x) {
+unsigned makeodd(const unsigned x) {
     if (x == 0) {
         return 1;
     } else  {
@@ -75,32 +74,32 @@ unsigned makeodd(unsigned x) {
     }
 }
 
-State **create_labyrinth(const unsigned size) {
+State **create_labyrinth(const unsigned size_x, const unsigned size_y) {
 
     /* Init map */
-    State **map = create_st(size);
+    State **map = create_st(size_x, size_y);
 
     /* Init auxiliary values */
     List *walls = nlist(); // List of walls
     List *secondary = nlist(); // List of walls between visited chambers
     srand(time(0));
-    unsigned cell_x = makeodd(rand() % size), cell_y = makeodd(rand() % size); // Initial cell coordinates
+    unsigned cell_x = makeodd(rand() % size_x), cell_y = makeodd(rand() % size_y); // Initial cell coordinates
     unsigned wall_x, wall_y;
     Direction dir;
     
 
     /* Build Prim's labyrinth */
     map[cell_x][cell_y] = Empty;
-    if (isInside(cell_x - 1, cell_y, size) && isInside(cell_x - 2, cell_y, size)) { // Left
+    if (isInside(cell_x - 1, cell_y, size_x, size_y) && isInside(cell_x - 2, cell_y, size_x, size_y)) { // Left
         add(walls, cell_x - 1, cell_y, left);
     }
-    if (isInside(cell_x + 1, cell_y, size) && isInside(cell_x + 2, cell_y, size)) { // Right
+    if (isInside(cell_x + 1, cell_y, size_x, size_y) && isInside(cell_x + 2, cell_y, size_x, size_y)) { // Right
         add(walls, cell_x + 1, cell_y, right);
     }
-    if (isInside(cell_x, cell_y - 1, size) && isInside(cell_x, cell_y - 2, size)) { // Up
+    if (isInside(cell_x, cell_y - 1, size_x, size_y) && isInside(cell_x, cell_y - 2, size_x, size_y)) { // Up
         add(walls, cell_x, cell_y - 1, up);
     }
-    if (isInside(cell_x, cell_y + 1, size) && isInside(cell_x, cell_y + 2, size)) { // Down
+    if (isInside(cell_x, cell_y + 1, size_x, size_y) && isInside(cell_x, cell_y + 2, size_x, size_y)) { // Down
         add(walls, cell_x, cell_y + 1, down);
     }
 
@@ -137,19 +136,19 @@ State **create_labyrinth(const unsigned size) {
         if (map[cell_x][cell_y] == Wall) { // If cell in the direction is a wall
             map[wall_x][wall_y] = map[cell_x][cell_y] = Empty; // Mark both wall and destination empty
 
-            if (isInside(cell_x - 1, cell_y, size) && isInside(cell_x - 2, cell_y, size) && map[cell_x - 2][cell_y] == Wall) { // Left
+            if (isInside(cell_x - 1, cell_y, size_x, size_y) && isInside(cell_x - 2, cell_y, size_x, size_y) && map[cell_x - 2][cell_y] == Wall) { // Left
                 add(walls, cell_x - 1, cell_y, left);
             }
-            if (isInside(cell_x + 1, cell_y, size) && isInside(cell_x + 2, cell_y, size) && map[cell_x + 2][cell_y] == Wall) { // Right
+            if (isInside(cell_x + 1, cell_y, size_x, size_y) && isInside(cell_x + 2, cell_y, size_x, size_y) && map[cell_x + 2][cell_y] == Wall) { // Right
                 add(walls, cell_x + 1, cell_y, right);
             }
-            if (isInside(cell_x, cell_y - 1, size) && isInside(cell_x, cell_y - 2, size) && map[cell_x][cell_y - 2] == Wall) { // Up
+            if (isInside(cell_x, cell_y - 1, size_x, size_y) && isInside(cell_x, cell_y - 2, size_x, size_y) && map[cell_x][cell_y - 2] == Wall) { // Up
                 add(walls, cell_x, cell_y - 1, up);
             }
-            if (isInside(cell_x, cell_y + 1, size) && isInside(cell_x, cell_y + 2, size) && map[cell_x][cell_y + 2] == Wall) { // Down
+            if (isInside(cell_x, cell_y + 1, size_x, size_y) && isInside(cell_x, cell_y + 2, size_x, size_y) && map[cell_x][cell_y + 2] == Wall) { // Down
                 add(walls, cell_x, cell_y + 1, down);
             }
-        } else if ((wall_y != 0) && (wall_y != size - 1) && (wall_x != 0) && (wall_x != size - 1)) {
+        } else if ((wall_y != 0) && (wall_y != size_y - 1) && (wall_x != 0) && (wall_x != size_x - 1)) {
             add(secondary, wall_x, wall_y, dir);
         }
     }
@@ -174,14 +173,21 @@ State **create_labyrinth(const unsigned size) {
     return map;
 }
 
-Point *rand_position(State **map, const unsigned size) {
+Point *rand_position(State **map, const unsigned size_x, const unsigned size_y) {
     Point *result = malloc(sizeof(Point));
-    result->x = makeodd(rand() % size);
-    result->y = makeodd(rand() % size);
+    result->x = makeodd(rand() % size_x);
+    result->y = makeodd(rand() % size_y);
     return result;
 }
 
-void reveal(Hidden **fog, const Point *player, const unsigned size) {
+Point *pointat(const unsigned x, const unsigned y) {
+    Point *result = malloc(sizeof(Point));
+    result->x = x;
+    result->y = y;
+    return result;
+}
+
+void reveal(Hidden **fog, const Point *player, const unsigned size_x, const unsigned size_y) {
     fog[player->x + 1][player->y] = 1;
     fog[player->x - 1][player->y] = 1;
     fog[player->x][player->y + 1] = 1;

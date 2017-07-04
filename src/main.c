@@ -25,33 +25,37 @@
  *                  Author:  Max Zhuravsky <paperlark@yandex.ru>                  *
  **********************************************************************************/
 
-#ifndef LIST_H
-#define LIST_H
+/* Headers */
+ #include "main.h"
+ #include "menu.h"
 
-/* Types */
-typedef enum {
-    up, down, left, right
-} Direction;
+/* Implementation */
+int main(void) {
+    /* Init */
+    initscr();
+    noecho();
+    cbreak(); 
+    curs_set(0);
+    refresh();
 
-typedef struct {
-    unsigned x, y;
-    Direction dir; 
-} Cell;
+    /* Init Colors */
+    start_color();
+    if (can_change_color()) {
+        init_color(COLOR_RED, 900, 0, 0);
+        init_color(COLOR_BLACK, 30, 30, 30);
+    }
+    init_pair(1, COLOR_WHITE, COLOR_BLACK); // Menu
+    init_pair(2, COLOR_MAGENTA, COLOR_BLACK); // Player
+    init_pair(3, COLOR_GREEN, COLOR_BLACK); // Walls
+    init_pair(4, COLOR_YELLOW, COLOR_BLACK); // Exit
+    init_pair(5, COLOR_RED, COLOR_BLACK); // Minotaur
+    init_pair(6, COLOR_RED, COLOR_BLACK); // Heart
 
-typedef struct entry {
-    struct entry *next;
-    Cell value;
-} Entry;
+    /* Start */
+    const int width = getmaxx(stdscr), height = getmaxy(stdscr);
+    menu(width, height);
 
-typedef struct {
-    unsigned length;
-    Entry *next;
-} List;
-
-/* Prototypes */
-int isEmpty(List *list);
-List *nlist();
-void add(List *list, unsigned x, unsigned y, Direction dir);
-Entry *getrandom(List *list);
-
-#endif
+    /* Epilogue */
+    endwin();
+    return 0;
+}

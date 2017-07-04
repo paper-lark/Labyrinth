@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "curses.h": "c",
+        "ncurses.h": "c",
+        "auxiliary.h": "c",
+        "menu.c": "cpp",
+        "cdefs.h": "c",
+        "os_defines.h": "c",
+        "list.h": "c",
+        "main.h": "c"
+    }
+}

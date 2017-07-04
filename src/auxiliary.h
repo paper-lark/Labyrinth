@@ -25,6 +25,12 @@
  *                  Author:  Max Zhuravsky <paperlark@yandex.ru>                  *
  **********************************************************************************/
 
+#ifndef AUX_H
+#define AUX_H
+
+/* MACRO */
+#define isInside(x, y, size_x, size_y) (x >= 0) && (y >= 0) && (y < size_y) && (x < size_x)
+
 /* Type */
 typedef enum {
     Wall, Empty
@@ -37,18 +43,20 @@ typedef struct {
 typedef signed char Hidden;
 
 /* Prototypes */
-State **create_labyrinth(const unsigned size);
+State **create_labyrinth(const unsigned size_x, const unsigned size_y);
 
-Hidden **create_hid(const unsigned size);
+Hidden **create_hid(const unsigned size_x, const unsigned size_y);
 
-void free_st(State **map, const unsigned size);
+void free_st(State **map, const unsigned size_x);
 
-void free_hid(Hidden **map, const unsigned size);
+void free_hid(Hidden **map, const unsigned size_x);
 
-void reveal(Hidden **fog, const Point *player, const unsigned size);
+void reveal(Hidden **fog, const Point *player, const unsigned size_x, const unsigned size_y);
 
-unsigned makeodd(unsigned x);
+unsigned makeodd(const unsigned x);
 
-State **create_st(const unsigned size);
+Point *pointat(const unsigned x, const unsigned y);
 
-Point *rand_position(State **map, const unsigned size);
+Point *rand_position(State **map, const unsigned size_x, const unsigned size_y);
+
+#endif
