@@ -165,7 +165,7 @@ void init_game(const int width, const int height, const GameMode mode) {
             /* Player won! */
             write_info(info_scene, "<Exit Reached. Congratulations! Press ENTER to continue>");
             break;
-        } else if (player->x == minotaur->x && player->y == minotaur->y) {
+        } else if (minotaur && player->x == minotaur->x && player->y == minotaur->y) {
             /* Player lost! */
             write_info(info_scene, "<You were caught by the minotaur. Press ENTER to continue>");
             break;

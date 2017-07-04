@@ -12,7 +12,7 @@
 #endif
 
 /* MACRO */
-#define VERSION "Version 1.2.0"
+#define VERSION "Version 2.0.1"
 #define MIN_WIDTH 64
 #define MIN_HEIGHT 15
 
