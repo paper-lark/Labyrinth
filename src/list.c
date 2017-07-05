@@ -25,10 +25,12 @@
  *                  Author:  Max Zhuravsky <paperlark@yandex.ru>                  *
  **********************************************************************************/
 
+/* Headers */
 #include "list.h"
 #include <stdlib.h>
 #include <assert.h>
 
+/* Implementation */
 int isEmpty(List *list) {
     return list->length == 0;
 }
