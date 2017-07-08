@@ -40,10 +40,22 @@
     #include <ncursesw/ncurses.h>
 #endif
 
-/* Socket Type */
+/* Networking */
+#if defined _WIN64 || defined _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #pragma comment(lib, "ws2_32.lib")
+#else
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <unistd.h>
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netdb.h>
+#endif
 #if defined _WIN64 || defined _WIN32
     #define USock SOCKET 
-    #define USOCK_ERROR SOCKET_ERROR
+    #define USOCK_ERROR INVALID_SOCKET
 #else
     #define USock int 
     #define USOCK_ERROR -1
@@ -53,6 +65,5 @@
 #define VERSION "Version 3.0.0 (WIP)"
 #define MIN_WIDTH 64
 #define MIN_HEIGHT 16
-#define ERROR (USock) USOCK_ERROR // -1?
 
 #endif

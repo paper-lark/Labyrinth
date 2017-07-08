@@ -322,7 +322,7 @@ void init_mpmenu(const int width, const int height) { // Client is the minotaur,
                     buffer[current++] = in;
                 }
                 break;
-            case 127:
+            case KEY_BACKSPACE: case 127: case 8:
                 if (highlight == txtindex) {
                     buffer[--current] = '\0';
                 }
@@ -337,7 +337,7 @@ void init_mpmenu(const int width, const int height) { // Client is the minotaur,
 
         if (choice == 0) { // Server
             USock sockfd;
-            if ((sockfd = create_server(info_scene)) == ERROR ) {
+            if ((sockfd = create_server(info_scene)) == USOCK_ERROR) {
                 choice = -1;
                 continue;
             }
@@ -347,7 +347,7 @@ void init_mpmenu(const int width, const int height) { // Client is the minotaur,
         } else if (choice == 1) { // Client
             char *ip = buffer;
             USock sockfd;
-            if ((sockfd = create_client(ip, info_scene)) == ERROR) {
+            if ((sockfd = create_client(ip, info_scene)) == USOCK_ERROR) {
                 choice = -1;
                 continue;
             }

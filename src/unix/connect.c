@@ -42,18 +42,18 @@ USock create_server(WINDOW *info_scene) {
     hints.ai_flags = AI_PASSIVE;
     if (getaddrinfo(NULL, PORT, &hints, &serverinfo) != 0) {
         show_info(info_scene, Left, "ERROR: getaddrinfo() error");
-        return ERROR;
+        return USOCK_ERROR;
     }
 
     /* Create socket and bind */
     USock serverfd = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol);
     if (serverfd == -1) {
         show_info(info_scene, Left, "ERROR: socket() error");
-        return ERROR;
+        return USOCK_ERROR;
     }
     if (bind(serverfd, serverinfo->ai_addr, serverinfo->ai_addrlen) == -1) { //::ToDo Iterate through all entries
         show_info(info_scene, Left, "ERROR: bind() error");
-        return ERROR;
+        return USOCK_ERROR;
     }
     freeaddrinfo(serverinfo);
 
@@ -67,7 +67,7 @@ USock create_server(WINDOW *info_scene) {
     USock clientfd = accept(serverfd, (struct sockaddr *)&clientinfo, &size);
     if (clientfd == -1) {
         show_info(info_scene, Left, "ERROR: accept() error");
-        return ERROR;
+        return USOCK_ERROR;
     }
     close(serverfd);
 
@@ -83,20 +83,20 @@ USock create_client(char *ip, WINDOW *info_scene) {
     hints.ai_family = AF_INET;
     if (getaddrinfo(ip, PORT, &hints, &serverinfo) != 0) {
         show_info(info_scene, Left, "ERROR: getaddrinfo() error");
-        return ERROR;
+        return USOCK_ERROR;
     }
 
     /* Create socket */
     USock sockfd = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol);
     if (sockfd == -1) {
         show_info(info_scene, Left, "ERROR: socket() error");
-        return ERROR;
+        return USOCK_ERROR;
     }
 
     /* Connect */
     if (connect(sockfd, serverinfo->ai_addr, serverinfo->ai_addrlen) == -1) {
         show_info(info_scene, Left, "ERROR: connect() error");
-        return ERROR;
+        return USOCK_ERROR;
     }
     freeaddrinfo(serverinfo);
 

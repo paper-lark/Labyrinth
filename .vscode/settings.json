@@ -15,6 +15,23 @@
         "stdio.h": "c",
         "_string.h": "c",
         "netdb.h": "c",
-        "socket.h": "c"
+        "socket.h": "c",
+        "windef.h": "c",
+        "wtypes.h": "c",
+        "stdlib.h": "c",
+        "winuser.h": "c",
+        "wingdi.h": "c",
+        "winnt.h": "c",
+        "wspiapi.h": "c",
+        "imm.h": "c",
+        "shellapi.h": "c",
+        "objidl.h": "c",
+        "objidlbase.h": "c",
+        "sdkddkver.h": "c",
+        "winreg.h": "c",
+        "winresrc.h": "c",
+        "winsock2.h": "c",
+        "ws2tcpip.h": "c",
+        "combaseapi.h": "c"
     }
 }

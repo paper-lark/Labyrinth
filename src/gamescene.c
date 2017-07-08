@@ -29,10 +29,11 @@
 #include "gamescene.h"
 #include "menu.h"
 #include "transmit.h"
+#include "auxiliary.h"
 
 /* Implementation */
 
-void show_game(WINDOW *game_scene, State **map, Hidden **fog, const Point *size, const Point *player, const Point *door, const Point *minotaur) {
+void show_game(WINDOW *game_scene, const State **map, const Hidden **fog, const Point *size, const Point *player, const Point *door, const Point *minotaur) {
     for (int y = 0; y < size->y; y++) {
         wmove(game_scene, y, 0);
         for (int x = 0; x < size->x; x++) {
@@ -125,27 +126,22 @@ void init_server(const int width, const int height, const GameMode mode, USock s
         int input = wgetch(game_scene);
         switch (input) {
             case KEY_DOWN:
-                show_info(info_scene, "Player down");
                 target->x = player->x;
                 target->y = player->y + 1;
                 break;
             case KEY_UP:
-                show_info(info_scene, "Player up");
                 target->x = player->x;
                 target->y = player->y - 1;
                 break;
             case KEY_LEFT:
-                show_info(info_scene, "Player left");
                 target->x = player->x - 1;
                 target->y = player->y;
                 break;
             case KEY_RIGHT:
-                show_info(info_scene, "Player right");
                 target->x = player->x + 1;
                 target->y = player->y;
                 break;
             default:
-                show_info(info_scene, "Idling...");
                 target->x = player->x;
                 target->y = player->y;
         }
@@ -160,27 +156,22 @@ void init_server(const int width, const int height, const GameMode mode, USock s
         if (mode == Hotseat) {
             switch (input) {
                 case 'S': case 's':
-                   show_info(info_scene, "Minotaur down");
                    target->x = minotaur->x;
                    target->y = minotaur->y + 1;
                    break;
                 case 'W': case 'w':
-                    show_info(info_scene, "Minotaur up");
                     target->x = minotaur->x;
                     target->y = minotaur->y - 1;
                     break;
                 case 'A': case 'a':
-                    show_info(info_scene, "Minotaur left");
                     target->x = minotaur->x - 1;
                     target->y = minotaur->y;
                     break;
                 case 'D': case 'd':
-                    show_info(info_scene, "Minotaur right");
                     target->x = minotaur->x + 1;
                     target->y = minotaur->y;
                     break;
                 default:
-                    show_info(info_scene, "Idling...");
                     target->x = minotaur->x;
                     target->y = minotaur->y;
             }
@@ -205,14 +196,14 @@ void init_server(const int width, const int height, const GameMode mode, USock s
         /* Check termination conditions */
         if (player->x == door->x && player->y == door->y) {
             /* Player won! */
-            show_info(info_scene, "<Exit Reached. Congratulations! Press ENTER to continue>");
+            show_info(info_scene, Center, "<Exit Reached. Congratulations! Press ENTER to continue>");
             if (mode == Multiplayer) {
                 send_status(sockfd, PlayerWins, NULL); //Send the message to the client
             }
             break;
         } else if (minotaur && player->x == minotaur->x && player->y == minotaur->y) {
             /* Player lost! */
-            show_info(info_scene, "<You were caught by the minotaur. Press ENTER to continue>");
+            show_info(info_scene, Center, "<You were caught by the minotaur. Press ENTER to continue>");
             if (mode == Multiplayer) {
                 send_status(sockfd, MinotaurWins, NULL); //Send the message to the client
             }
@@ -267,27 +258,22 @@ void init_client(const int width, const int height, const USock sockfd) {
         int input = wgetch(game_scene);
         switch (input) {
             case KEY_DOWN:
-                show_info(info_scene, "Minotaur down");
                 target->x = minotaur->x;
                 target->y = minotaur->y + 1;
                 break;
             case KEY_UP:
-                show_info(info_scene, "Minotaur up");
                 target->x = minotaur->x;
                 target->y = minotaur->y - 1;
                 break;
             case KEY_LEFT:
-                show_info(info_scene, "Minotaur left");
                 target->x = minotaur->x - 1;
                 target->y = minotaur->y;
                 break;
             case KEY_RIGHT:
-                show_info(info_scene, "Minotaur right");
                 target->x = minotaur->x + 1;
                 target->y = minotaur->y;
                 break;
             default:
-                show_info(info_scene, "Idling...");
                 target->x = minotaur->x;
                 target->y = minotaur->y;
         }
@@ -301,10 +287,10 @@ void init_client(const int width, const int height, const USock sockfd) {
         InfoType status;
         recv_status(sockfd, &status, player);
         if (status == PlayerWins) {
-            show_info(info_scene, "<Player escaped. What a shame! Press ENTER to continue>");
+            show_info(info_scene, Center, "<Player escaped. What a shame! Press ENTER to continue>");
             break;
         } else if (status == MinotaurWins) {
-            show_info(info_scene, "<Nasty human is caught! Rooooar!!! Press ENTER to continue>");
+            show_info(info_scene, Center, "<Nasty human is caught! Rooooar!!! Press ENTER to continue>");
             break;
         }
         send_status(sockfd, Location, minotaur);

@@ -30,12 +30,12 @@
 
 /* Implementation */
 int send_point(USock sockfd, const Point *pt) {
-    if (send(sockfd, pt, sizeof(Point), 0) == USOCK_ERROR)
+    if (send(sockfd, (const char *)pt, sizeof(Point), 0) == USOCK_ERROR)
         return -1;
     return 0;
 }
 int recv_point(USock sockfd, Point *pt) {
-    if (recv(sockfd, pt, sizeof(Point), 0) == USOCK_ERROR)
+    if (recv(sockfd, (char *)pt, sizeof(Point), 0) == USOCK_ERROR)
         return -1;
     return 0;
 }
@@ -44,16 +44,16 @@ int send_initial_info(USock sockfd, const Point size, const State **map, const P
     /* Send map */
     for (unsigned i = 0; i < size.x; i++)
         for(unsigned j = 0; j < size.y; j++) {
-            if (send(sockfd, &map[i][j], sizeof(State), 0) == -1)
+            if (send(sockfd, (const char *)&map[i][j], sizeof(State), 0) == -1)
                 return -1;
         }
 
     /* Send player, door, minotaur locations */
-    if (send(sockfd, player, sizeof(Point), 0) == USOCK_ERROR)
+    if (send(sockfd, (const char *)player, sizeof(Point), 0) == USOCK_ERROR)
         return -1;
-    if (send(sockfd, door, sizeof(Point), 0) == USOCK_ERROR)
+    if (send(sockfd, (const char *)door, sizeof(Point), 0) == USOCK_ERROR)
         return -1;
-    if (send(sockfd, minotaur, sizeof(Point), 0) == USOCK_ERROR)
+    if (send(sockfd, (const char *)minotaur, sizeof(Point), 0) == USOCK_ERROR)
         return -1;
 
     return 0;
@@ -63,35 +63,35 @@ int recv_initial_info(USock sockfd, const Point size, State **map, Point *player
     /* Receive map */
     for (unsigned i = 0; i < size.x; i++)
         for(unsigned j = 0; j < size.y; j++) {
-            if (recv(sockfd, &map[i][j], sizeof(State), 0) == USOCK_ERROR)
+            if (recv(sockfd, (char *)&map[i][j], sizeof(State), 0) == USOCK_ERROR)
                 return -1;
         }
 
     /* Receive player, door, minotaur locations */
-    if (recv(sockfd, player, sizeof(Point), 0) == USOCK_ERROR)
+    if (recv(sockfd, (char *)player, sizeof(Point), 0) == USOCK_ERROR)
         return -1;
-    if (recv(sockfd, door, sizeof(Point), 0) == USOCK_ERROR)
+    if (recv(sockfd, (char *)door, sizeof(Point), 0) == USOCK_ERROR)
         return -1;
-    if (recv(sockfd, minotaur, sizeof(Point), 0) == USOCK_ERROR)
+    if (recv(sockfd, (char *)minotaur, sizeof(Point), 0) == USOCK_ERROR)
         return -1;
 
     return 0;
 }
 
 int send_status(USock sockfd, InfoType type, const Point *position) {
-    if (send(sockfd, &type, sizeof(InfoType), 0) == USOCK_ERROR)
+    if (send(sockfd, (const char *)&type, sizeof(InfoType), 0) == USOCK_ERROR)
         return -1;
     if (type == Location)
-        if (send(sockfd, position, sizeof(Point), 0) == USOCK_ERROR)
+        if (send(sockfd, (const char *)position, sizeof(Point), 0) == USOCK_ERROR)
             return -1;
     return 0;
 }
 
 int recv_status(USock sockfd, InfoType *type, Point *position) {
-    if (recv(sockfd, type, sizeof(InfoType), 0) == USOCK_ERROR)
+    if (recv(sockfd, (char *)type, sizeof(InfoType), 0) == USOCK_ERROR)
         return -1;
     if (*type == Location)
-        if (recv(sockfd, position, sizeof(Point), 0) == USOCK_ERROR)
+        if (recv(sockfd, (char *)position, sizeof(Point), 0) == USOCK_ERROR)
             return -1;
     return 0;
 }

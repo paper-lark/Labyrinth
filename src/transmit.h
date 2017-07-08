@@ -29,17 +29,6 @@
 #define TRANSMIT_H
 
 /* Headers */
-#if defined _WIN64 || defined _WIN32
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-#else
-    #include <arpa/inet.h>
-    #include <netinet/in.h>
-    #include <unistd.h>
-    #include <sys/types.h>
-    #include <sys/socket.h>
-    #include <netdb.h>
-#endif
 #include "main.h"
 #include "auxiliary.h"
 
