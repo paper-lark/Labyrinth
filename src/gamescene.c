@@ -28,10 +28,10 @@
 /* Headers */
 #include "gamescene.h"
 #include "menu.h"
+#include "transmit.h"
 
 /* Implementation */
 
-//::ToDo Modify to redraw only a block of the map
 void show_game(WINDOW *game_scene, State **map, Hidden **fog, const Point *size, const Point *player, const Point *door, const Point *minotaur) {
     for (int y = 0; y < size->y; y++) {
         wmove(game_scene, y, 0);
@@ -58,7 +58,7 @@ void show_game(WINDOW *game_scene, State **map, Hidden **fog, const Point *size,
     }
 
     /* Show player */
-    {
+    if (fog[player->x][player->y] == 1) {
         wattron(game_scene, A_BOLD);
         wattron(game_scene, COLOR_PAIR(2));
         mvwaddch(game_scene, player->y, player->x, PLAYER);
@@ -87,12 +87,12 @@ void show_game(WINDOW *game_scene, State **map, Hidden **fog, const Point *size,
     wrefresh(game_scene);
 }
 
-void init_game(const int width, const int height, const GameMode mode) {
+void init_server(const int width, const int height, const GameMode mode, USock sockfd) {
 
     /* Init scene */
-    const Point size = {.x = makeodd(width * 0.75), .y = makeodd(height - 4)};
+    const Point size = {.x = min2(makeodd(width * 0.75), makeodd(MIN_WIDTH - 1)), .y = min2(makeodd(height - 4), makeodd(MIN_HEIGHT - 1))};
     WINDOW *background_scene = newwin(height, width, 0, 0);
-    WINDOW *game_scene = newwin(size.y, size.x, 0, (width - size.x) / 2);
+    WINDOW *game_scene = newwin(size.y, size.x, 1, (width - size.x) / 2);
     WINDOW *info_scene = newwin(1, width, height - 1, 0);
     keypad(game_scene, TRUE);
     halfdelay(DELAY);
@@ -107,6 +107,10 @@ void init_game(const int width, const int height, const GameMode mode) {
     if (mode == Hotseat) {
         minotaur = pointat(makeodd(size.x / 2), makeodd(size.y / 2));
         reveal(fog, minotaur, size.x, size.y);
+    } else if (mode == Multiplayer) {
+        minotaur = pointat(makeodd(size.x / 2), makeodd(size.y / 2));
+        send_point(sockfd, &size);
+        send_initial_info(sockfd, size, map, player, door, minotaur); //Trasmit all the data to the client
     }
 
     /* Show scene */
@@ -121,27 +125,27 @@ void init_game(const int width, const int height, const GameMode mode) {
         int input = wgetch(game_scene);
         switch (input) {
             case KEY_DOWN:
-                write_info(info_scene, "Player down");
+                show_info(info_scene, "Player down");
                 target->x = player->x;
                 target->y = player->y + 1;
                 break;
             case KEY_UP:
-                write_info(info_scene, "Player up");
+                show_info(info_scene, "Player up");
                 target->x = player->x;
                 target->y = player->y - 1;
                 break;
             case KEY_LEFT:
-                write_info(info_scene, "Player left");
+                show_info(info_scene, "Player left");
                 target->x = player->x - 1;
                 target->y = player->y;
                 break;
             case KEY_RIGHT:
-                write_info(info_scene, "Player right");
+                show_info(info_scene, "Player right");
                 target->x = player->x + 1;
                 target->y = player->y;
                 break;
             default:
-                write_info(info_scene, "Idling...");
+                show_info(info_scene, "Idling...");
                 target->x = player->x;
                 target->y = player->y;
         }
@@ -156,27 +160,27 @@ void init_game(const int width, const int height, const GameMode mode) {
         if (mode == Hotseat) {
             switch (input) {
                 case 'S': case 's':
-                   write_info(info_scene, "Minotaur down");
+                   show_info(info_scene, "Minotaur down");
                    target->x = minotaur->x;
                    target->y = minotaur->y + 1;
                    break;
                 case 'W': case 'w':
-                    write_info(info_scene, "Minotaur up");
+                    show_info(info_scene, "Minotaur up");
                     target->x = minotaur->x;
                     target->y = minotaur->y - 1;
                     break;
                 case 'A': case 'a':
-                    write_info(info_scene, "Minotaur left");
+                    show_info(info_scene, "Minotaur left");
                     target->x = minotaur->x - 1;
                     target->y = minotaur->y;
                     break;
                 case 'D': case 'd':
-                    write_info(info_scene, "Minotaur right");
+                    show_info(info_scene, "Minotaur right");
                     target->x = minotaur->x + 1;
                     target->y = minotaur->y;
                     break;
                 default:
-                    write_info(info_scene, "Idling...");
+                    show_info(info_scene, "Idling...");
                     target->x = minotaur->x;
                     target->y = minotaur->y;
             }
@@ -188,18 +192,127 @@ void init_game(const int width, const int height, const GameMode mode) {
             }
         }
 
+        /* Multiplayer Mode */
+        if (mode == Multiplayer) {
+            InfoType status;
+            send_status(sockfd, Location, player);
+            recv_status(sockfd, &status, minotaur);
+
+            /* Update screen */
+            show_game(game_scene, map, fog, &size, player, door, minotaur);
+        }
+
         /* Check termination conditions */
         if (player->x == door->x && player->y == door->y) {
             /* Player won! */
-            write_info(info_scene, "<Exit Reached. Congratulations! Press ENTER to continue>");
+            show_info(info_scene, "<Exit Reached. Congratulations! Press ENTER to continue>");
+            if (mode == Multiplayer) {
+                send_status(sockfd, PlayerWins, NULL); //Send the message to the client
+            }
             break;
         } else if (minotaur && player->x == minotaur->x && player->y == minotaur->y) {
             /* Player lost! */
-            write_info(info_scene, "<You were caught by the minotaur. Press ENTER to continue>");
+            show_info(info_scene, "<You were caught by the minotaur. Press ENTER to continue>");
+            if (mode == Multiplayer) {
+                send_status(sockfd, MinotaurWins, NULL); //Send the message to the client
+            }
             break;
         }
     }
     
+    /* Exit */
+    while (TRUE) {
+        int input = wgetch(info_scene);
+        if (input == 10)
+            break;
+    }
+
+    /* Free memory */
+    free_st(map, size.x);
+    free_hid(fog, size.x);
+    free(player);
+    free(door);
+    free(target);
+    free(minotaur);
+}
+
+void init_client(const int width, const int height, const USock sockfd) {
+    /* Receive info */
+    Point size;
+    recv_point(sockfd, &size);
+    State **map = create_st(size.x, size.y);
+    Point *player = malloc(sizeof(Point));
+    Point *door = malloc(sizeof(Point));
+    Point *minotaur = malloc(sizeof(Point));
+    recv_initial_info(sockfd, size, map, player, door, minotaur);
+
+    /* Init scene */
+    WINDOW *background_scene = newwin(height, width, 0, 0);
+    WINDOW *game_scene = newwin(size.y, size.x, 0, (width - size.x) / 2);
+    WINDOW *info_scene = newwin(1, width, height - 1, 0);
+    keypad(game_scene, TRUE);
+    halfdelay(DELAY);
+
+    /* Create labyrinth */
+    Hidden **fog = create_hid(size.x, size.y);
+    reveal(fog, minotaur, size.x, size.y);
+
+    /* Show scene */
+    wrefresh(background_scene);
+    show_game(game_scene, map, fog, &size, player, door, minotaur);
+
+    /* Logic */
+    Point *target = malloc(sizeof(Point));
+    while (TRUE) {
+        int input = wgetch(game_scene);
+        switch (input) {
+            case KEY_DOWN:
+                show_info(info_scene, "Minotaur down");
+                target->x = minotaur->x;
+                target->y = minotaur->y + 1;
+                break;
+            case KEY_UP:
+                show_info(info_scene, "Minotaur up");
+                target->x = minotaur->x;
+                target->y = minotaur->y - 1;
+                break;
+            case KEY_LEFT:
+                show_info(info_scene, "Minotaur left");
+                target->x = minotaur->x - 1;
+                target->y = minotaur->y;
+                break;
+            case KEY_RIGHT:
+                show_info(info_scene, "Minotaur right");
+                target->x = minotaur->x + 1;
+                target->y = minotaur->y;
+                break;
+            default:
+                show_info(info_scene, "Idling...");
+                target->x = minotaur->x;
+                target->y = minotaur->y;
+        }
+        if (isInside(target->x, target->y, size.x, size.y) && map[target->x][target->y] == Empty) {
+            minotaur->x = target->x;
+            minotaur->y = target->y;
+            reveal(fog, minotaur, size.x, size.y);
+        }
+
+        /* Exchange information with the server */
+        InfoType status;
+        recv_status(sockfd, &status, player);
+        if (status == PlayerWins) {
+            show_info(info_scene, "<Player escaped. What a shame! Press ENTER to continue>");
+            break;
+        } else if (status == MinotaurWins) {
+            show_info(info_scene, "<Nasty human is caught! Rooooar!!! Press ENTER to continue>");
+            break;
+        }
+        send_status(sockfd, Location, minotaur);
+
+        /* Update screen */
+        show_game(game_scene, map, fog, &size, player, door, minotaur);
+    }
+
     /* Exit */
     while (TRUE) {
         int input = wgetch(info_scene);

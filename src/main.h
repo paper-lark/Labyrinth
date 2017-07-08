@@ -30,6 +30,8 @@
 
 /* Headers */
 #include <stdlib.h>
+
+/* Curses */
 #if defined _WIN64 || defined _WIN32
     #include <curses.h>
 #elif defined __linux__
@@ -38,9 +40,19 @@
     #include <ncursesw/ncurses.h>
 #endif
 
+/* Socket Type */
+#if defined _WIN64 || defined _WIN32
+    #define USock SOCKET 
+    #define USOCK_ERROR SOCKET_ERROR
+#else
+    #define USock int 
+    #define USOCK_ERROR -1
+#endif
+
 /* MACRO */
-#define VERSION "Version 2.0.1"
+#define VERSION "Version 3.0.0 (WIP)"
 #define MIN_WIDTH 64
-#define MIN_HEIGHT 15
+#define MIN_HEIGHT 16
+#define ERROR (USock) USOCK_ERROR // -1?
 
 #endif

@@ -24,33 +24,36 @@
  *                                 Labyrinth Game                                 *
  *                  Author:  Max Zhuravsky <paperlark@yandex.ru>                  *
  **********************************************************************************/
+ 
+#ifndef TRANSMIT_H
+#define TRANSMIT_H
 
-#ifndef AUX_H
-#define AUX_H
+/* Headers */
+#if defined _WIN64 || defined _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+#else
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <unistd.h>
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netdb.h>
+#endif
+#include "main.h"
+#include "auxiliary.h"
 
-/* MACRO */
-#define isInside(x, y, size_x, size_y) (x >= 0) && (y >= 0) && (y < size_y) && (x < size_x)
-
-/* Type */
+/* Types */
 typedef enum {
-    Wall, Empty
-} State;
-
-typedef struct {
-    unsigned x, y;
-} Point;
-
-typedef signed char Hidden;
+    PlayerWins, MinotaurWins, Location
+} InfoType;
 
 /* Prototypes */
-State **create_labyrinth(const unsigned size_x, const unsigned size_y);
-Hidden **create_hid(const unsigned size_x, const unsigned size_y);
-State **create_st(const unsigned size_x, const unsigned size_y);
-void free_st(State **map, const unsigned size_x);
-void free_hid(Hidden **map, const unsigned size_x);
-void reveal(Hidden **fog, const Point *player, const unsigned size_x, const unsigned size_y);
-unsigned makeodd(const unsigned x);
-Point *pointat(const unsigned x, const unsigned y);
-Point *rand_position(State **map, const unsigned size_x, const unsigned size_y);
+int send_point(USock sockfd, const Point *pt);
+int recv_point(USock sockfd, Point *pt);
+int send_initial_info(USock sockfd, const Point size, const State **map, const Point *player, const Point *door, const Point *minotaur);
+int recv_initial_info(USock sockfd, const Point size, State **map, Point *player, Point *door, Point *minotaur);
+int send_status(USock sockfd, const InfoType type, const Point *position);
+int recv_status(USock sockfd, InfoType *type, Point *position);
 
 #endif

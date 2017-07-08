@@ -48,6 +48,6 @@
 typedef enum {
     SinglePlayer = 0, Hotseat = 1, Multiplayer = 2
 } GameMode;
-void init_game(const int width, const int height, const GameMode mode);
-
+void init_server(const int width, const int height, const GameMode mode, const USock sockfd);
+void init_client(const int width, const int height, const USock sockfd);
 #endif

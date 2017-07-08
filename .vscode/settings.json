@@ -7,6 +7,14 @@
         "cdefs.h": "c",
         "os_defines.h": "c",
         "list.h": "c",
-        "main.h": "c"
+        "main.h": "c",
+        "types.h": "c",
+        "gamescene.h": "c",
+        "transmit.h": "c",
+        "assert.h": "c",
+        "stdio.h": "c",
+        "_string.h": "c",
+        "netdb.h": "c",
+        "socket.h": "c"
     }
 }

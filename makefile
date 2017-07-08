@@ -25,34 +25,47 @@
 #                  Author:  Max Zhuravsky <paperlark@yandex.ru>                  #
 ##################################################################################
 
+# Variables
 obj_dir = bin
 src_dir = src
 
 ifeq ($(OS), Windows_NT) 
-	CURSES_FLAG = -lpdcurses
+	FLAGS = -lpdcurses -lws2_32
+	lib_dir = win
 else
-	CURSES_FLAG = -lncurses
+	FLAGS = -lncurses
+	lib_dir = unix
 endif
 
-all: labyrinth
 
-labyrinth: auxiliary.o gamescene.o list.o main.o menu.o 
-	gcc -Wall  -o $(obj_dir)/labyrinth $(obj_dir)/main.o $(obj_dir)/menu.o $(obj_dir)/gamescene.o $(obj_dir)/auxiliary.o $(obj_dir)/list.o $(CURSES_FLAG)
+# Targets
+.PHONY: all clean
 
-auxiliary.o: $(src_dir)/auxiliary.c $(src_dir)/auxiliary.h
+all: $(obj_dir)/labyrinth
+
+$(obj_dir)/labyrinth: $(obj_dir)/auxiliary.o $(obj_dir)/gamescene.o $(obj_dir)/list.o $(obj_dir)/main.o $(obj_dir)/menu.o $(obj_dir)/connect.o $(obj_dir)/transmit.o
+	gcc -Wall  -o $(obj_dir)/labyrinth $(obj_dir)/main.o $(obj_dir)/menu.o $(obj_dir)/gamescene.o $(obj_dir)/connect.o $(obj_dir)/transmit.o $(obj_dir)/auxiliary.o $(obj_dir)/list.o $(FLAGS)
+
+$(obj_dir)/auxiliary.o: $(src_dir)/auxiliary.c $(src_dir)/auxiliary.h
 	gcc -c -Wall -o $(obj_dir)/auxiliary.o $(src_dir)/auxiliary.c
 
-gamescene.o: $(src_dir)/gamescene.c $(src_dir)/gamescene.h
+$(obj_dir)/gamescene.o: $(src_dir)/gamescene.c $(src_dir)/gamescene.h
 	gcc -c -Wall -o $(obj_dir)/gamescene.o $(src_dir)/gamescene.c
 
-list.o: $(src_dir)/list.c $(src_dir)/list.h
+$(obj_dir)/list.o: $(src_dir)/list.c $(src_dir)/list.h
 	gcc -c -Wall -o $(obj_dir)/list.o $(src_dir)/list.c
 	
-main.o: $(src_dir)/main.c $(src_dir)/main.h
+$(obj_dir)/main.o: $(src_dir)/main.c $(src_dir)/main.h
 	gcc -c -Wall -o $(obj_dir)/main.o $(src_dir)/main.c
 
-menu.o: $(src_dir)/menu.c $(src_dir)/menu.h
+$(obj_dir)/menu.o: $(src_dir)/menu.c $(src_dir)/menu.h
 	gcc -c -Wall -o $(obj_dir)/menu.o $(src_dir)/menu.c
+
+$(obj_dir)/connect.o: $(src_dir)/$(lib_dir)/connect.c $(src_dir)/connect.h
+	gcc -c -Wall -o $(obj_dir)/connect.o $(src_dir)/$(lib_dir)/connect.c 
+
+$(obj_dir)/transmit.o: $(src_dir)/transmit.c $(src_dir)/transmit.h
+	gcc -c -Wall -o $(obj_dir)/transmit.o $(src_dir)/transmit.c 
 
 clean:
 	rm -f $(obj_dir)/*.o

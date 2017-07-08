@@ -25,32 +25,29 @@
  *                  Author:  Max Zhuravsky <paperlark@yandex.ru>                  *
  **********************************************************************************/
 
-#ifndef AUX_H
-#define AUX_H
+#ifndef CONNECT_H
+#define CONNECT_H
+
+/* Headers */
+#if defined _WIN64 || defined _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+#else
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <unistd.h>
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netdb.h>
+#endif
+#include "main.h"
 
 /* MACRO */
-#define isInside(x, y, size_x, size_y) (x >= 0) && (y >= 0) && (y < size_y) && (x < size_x)
+#define PORT "10056"
 
-/* Type */
-typedef enum {
-    Wall, Empty
-} State;
-
-typedef struct {
-    unsigned x, y;
-} Point;
-
-typedef signed char Hidden;
-
-/* Prototypes */
-State **create_labyrinth(const unsigned size_x, const unsigned size_y);
-Hidden **create_hid(const unsigned size_x, const unsigned size_y);
-State **create_st(const unsigned size_x, const unsigned size_y);
-void free_st(State **map, const unsigned size_x);
-void free_hid(Hidden **map, const unsigned size_x);
-void reveal(Hidden **fog, const Point *player, const unsigned size_x, const unsigned size_y);
-unsigned makeodd(const unsigned x);
-Point *pointat(const unsigned x, const unsigned y);
-Point *rand_position(State **map, const unsigned size_x, const unsigned size_y);
+/* Prototype */
+USock create_server(WINDOW *info_scene);
+USock create_client(char *ip, WINDOW *info_scene);
+void close_usocket(USock sockfd);
 
 #endif

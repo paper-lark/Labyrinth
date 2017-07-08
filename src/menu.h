@@ -28,8 +28,13 @@
 #ifndef MENU_H
 #define MENU_H
 
+/* Types */
+typedef enum {
+    Center, Left
+} MAlign;
+
 /* Prototypes */
 void menu(const int width, const int height);
-void write_info(WINDOW *info_scene, char *msg);
+void show_info(WINDOW *info_scene, const MAlign alignment, char *msg);
 
 #endif

@@ -30,21 +30,26 @@
 #include <string.h>
 #include "main.h"
 #include "gamescene.h"
+#include "connect.h"
+#include "menu.h"
 
 /* Prototypes */
 void menu(const int width, const int height);
-void init_setup(const int width, const int height);
+void init_select(const int width, const int height);
+void init_mpmenu(const int width, const int height);
 void init_settings(const int width, const int height);
 void init_help(const int width, const int height);
 void init_about(const int width, const int height);
 void init_exit(const int width, const int height);
-void write_info(WINDOW *info_scene, char *msg);
-void show_menu(WINDOW* background_scene, WINDOW *menu_scene, const char *title, const char *entries[], const unsigned length, const int hlt);
+void show_info(WINDOW *info_scene, const MAlign alignment, char *msg);
+void show_menu(WINDOW *menu_scene, const char *title, const char *entries[], const unsigned length, const MAlign alignment, const int hlt);
+void show_txtfld(WINDOW* menu_scene, const char *title, const char *text, const unsigned txtindex, const unsigned hlt);
 
 /* Implementation */
 void menu(const int width, const int height) {
     /* Init scene */
-    const unsigned mwidth = 64, mheight = 15;
+    const unsigned mwidth = 64, mheight = 10;
+    const MAlign alignment = Center;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *menu_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(menu_scene, TRUE);
@@ -57,7 +62,10 @@ void menu(const int width, const int height) {
                               "Exit"};
     const unsigned length = 5;
     wattron(menu_scene, COLOR_PAIR(1));
-    show_menu(background_scene, menu_scene, title, entries, length, highlight);
+
+    /* Initial Refresh */
+    wrefresh(background_scene);
+    show_menu(menu_scene, title, entries, length, alignment, highlight);
 
     /* Get the choice */
     while (TRUE) {
@@ -74,24 +82,32 @@ void menu(const int width, const int height) {
                 break;
         }
 
-        show_menu(background_scene, menu_scene, title, entries, length, highlight);
+        show_menu(menu_scene, title, entries, length, alignment, highlight);
 
         if (choice == 0) { // Play
-            init_setup(width, height);
-            show_menu(background_scene, menu_scene, title, entries, length, highlight);
+            init_select(width, height);
+            wclear(background_scene);
+            wrefresh(background_scene);
+            show_menu(menu_scene, title, entries, length, alignment, highlight);
             cbreak();
             choice = -1;
         } else if (choice == 1) { // Settings
             init_settings(width, height);
-            show_menu(background_scene, menu_scene, title, entries, length, highlight);
+            wclear(background_scene);
+            wrefresh(background_scene);
+            show_menu(menu_scene, title, entries, length, alignment, highlight);
             choice = -1;
         } else if (choice == 2) { // Help
             init_help(width, height);
-            show_menu(background_scene, menu_scene, title, entries, length, highlight);
+            wclear(background_scene);
+            wrefresh(background_scene);
+            show_menu(menu_scene, title, entries, length, alignment, highlight);
             choice = -1;
         } else if (choice == 3) { // About
             init_about(width, height);
-            show_menu(background_scene, menu_scene, title, entries, length, highlight);
+            wclear(background_scene);
+            wrefresh(background_scene);
+            show_menu(menu_scene, title, entries, length, alignment, highlight);
             choice = -1;
         } else if (choice == 4) { // Exit
             init_exit(width, height);
@@ -99,33 +115,6 @@ void menu(const int width, const int height) {
         }
     }
     return;
-}
-
-void write_info(WINDOW *info_scene, char *msg) { 
-    wclear(info_scene);
-    unsigned x = getmaxx(info_scene);
-    mvwprintw(info_scene, 0, (x - strlen(msg)) / 2, msg);
-    wrefresh(info_scene);
-}
-
-void show_menu(WINDOW *background_scene, WINDOW *menu_scene, const char *title, const char *entries[], const unsigned length, const int hlt) {
-    wclear(background_scene);
-    wrefresh(background_scene);
-    const unsigned x = getmaxx(menu_scene);
-    box(menu_scene, 0, 0);
-    wattron(menu_scene, A_BOLD);
-    mvwprintw(menu_scene, 1, (x - strlen(title)) / 2, title);
-    wattroff(menu_scene, A_BOLD);
-    for (unsigned i = 0; i < length; i++) {
-        if (hlt == i) {
-            wattron(menu_scene, A_REVERSE);
-            mvwprintw(menu_scene, i + 3, 3, "%s", entries[i]);
-            wattroff(menu_scene, A_REVERSE);
-        } else {
-            mvwprintw(menu_scene, i + 3, 3, "%s", entries[i]);
-        }
-    }
-    wrefresh(menu_scene);
 }
 
 void init_help(const int width, const int height) {
@@ -138,10 +127,12 @@ void init_help(const int width, const int height) {
     wattron(help_scene, COLOR_PAIR(1));
     box(help_scene, 0, 0);
 
+    /* Title */
     wattron(help_scene, A_BOLD);
     mvwprintw(help_scene, 1, (mwidth - 4) / 2, "Help");
     wattroff(help_scene, A_BOLD);
 
+    /* Body */
     mvwprintw(help_scene, 3, 3, "Hey there, young (well, maybe not) labyrinth explorer!");
     mvwprintw(help_scene, 4, 3, "Here's a brief legend for you, so you wouldn't get lost :)");
     mvwprintw(help_scene, 5, 7, "%c - player", PLAYER);
@@ -161,17 +152,18 @@ void init_about(const int width, const int height) {
     const unsigned mwidth = 64, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     wrefresh(background_scene);
-    //assert(width >= mwidth && height >= mheight);
 
     WINDOW *about_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(about_scene, TRUE);
     wattron(about_scene, COLOR_PAIR(1));
     box(about_scene, 0, 0);
 
+    /* Title */
     wattron(about_scene, A_BOLD);
     mvwprintw(about_scene, 1, (mwidth - 4) / 2, "About");
     wattroff(about_scene, A_BOLD);
 
+    /* Body */
     mvwprintw(about_scene, 3, (mwidth - 16) / 2, "A labyrinth game");
     mvwprintw(about_scene, 4, (mwidth - 50) / 2, "Huge thanks to my best friend, Migle Kucinskaite ");
     {
@@ -195,13 +187,13 @@ void init_exit(const int width, const int height) {
     const unsigned mwidth = 64, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     wrefresh(background_scene);
-    //assert(width >= mwidth && height >= mheight);
 
     WINDOW *exit_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(exit_scene, TRUE);
     wattron(exit_scene, COLOR_PAIR(1));
     box(exit_scene, 0, 0);
 
+    /* Body */
     mvwprintw(exit_scene, 3, (mwidth - 24) / 2, "Hope you had some fun :)");
     mvwprintw(exit_scene, 4, (mwidth - 30) / 2, "Have a lovely day and see you!");
     mvwprintw(exit_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to quit>");
@@ -214,13 +206,18 @@ void init_settings(const int width, const int height) {
     const unsigned mwidth = 64, mheight = 15;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     wrefresh(background_scene);
-    assert(width >= mwidth && height >= mheight);
 
     WINDOW *settings_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(settings_scene, TRUE);
     wattron(settings_scene, COLOR_PAIR(1));
     box(settings_scene, 0, 0);
 
+    /* Title */
+    wattron(settings_scene, A_BOLD);
+    mvwprintw(settings_scene, 1, (mwidth - 4) / 2, "About");
+    wattroff(settings_scene, A_BOLD);
+
+    /* Body */
     mvwprintw(settings_scene, 3, (mwidth - 52) / 2, "Oops! Looks like this menu has not been created yet.");
     mvwprintw(settings_scene, 4, (mwidth - 15) / 2, "Don't panic! :)");
     mvwprintw(settings_scene, 4, (mwidth - 56) / 2, "We'll do our best to get it working as soon as possible.");
@@ -230,9 +227,10 @@ void init_settings(const int width, const int height) {
     wgetch(settings_scene);
 }
 
-void init_setup(const int width, const int height) {
+void init_select(const int width, const int height) {
     /* Init scene */
-    const unsigned mwidth = 30, mheight = 15;
+    const unsigned mwidth = 64, mheight = 15;
+    const MAlign alignment = Center;
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *setup_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(setup_scene, TRUE);
@@ -240,10 +238,14 @@ void init_setup(const int width, const int height) {
     const char *title = "Select Game Mode";
     const char *entries[] = { "Single Player",
                               "Hotseat",
-                              "Multiplayer"};
-    const unsigned length = 3;
+                              "Multiplayer",
+                              "Back"};
+    const unsigned length = 4;
     wattron(setup_scene, COLOR_PAIR(1));
-    show_menu(background_scene, setup_scene, title, entries, length, highlight);
+
+    /* Initial Refresh */
+    wrefresh(background_scene);
+    show_menu(setup_scene, title, entries, length, alignment, highlight);
 
     /* Get the choice */
     while (choice == -1) {
@@ -259,11 +261,178 @@ void init_setup(const int width, const int height) {
                 choice = highlight;
                 break;
         }
-        show_menu(background_scene, setup_scene, title, entries, length, highlight);
+        show_menu(setup_scene, title, entries, length, alignment, highlight);
     }
+
+    /* Init game */
     if (choice == Hotseat || choice == SinglePlayer) {
-        init_game(width, height, choice);
-    } else {
-        //::ToDo Establish connection and start the game
+        init_server(width, height, choice, (USock) NULL);
+    } else if (choice == Multiplayer) {
+        init_mpmenu(width, height);
     }
+}
+
+void init_mpmenu(const int width, const int height) { // Client is the minotaur, server is the player
+    /* Init scene */
+    const unsigned mwidth = 64;
+    const MAlign alignment = Center;
+    WINDOW *background_scene = newwin(height, width, 0, 0);
+    WINDOW *side_scene = newwin(8, mwidth, (height - 14) / 2, (width - mwidth) / 2);
+    keypad(background_scene, TRUE);
+    unsigned highlight = 0, choice = -1;
+    const char *side_title = "Choose your side";
+    const char *entries[] = { "Server",
+                              "Client",
+                              "Back"};
+    const unsigned length = 3;
+    wattron(side_scene, COLOR_PAIR(1));
+
+    WINDOW *ip_scene = newwin(4, mwidth, (height - 14) / 2 + 10, (width - mwidth) / 2);
+    const unsigned txtindex = length;
+    const char *ip_title = "IPv4 to connect (for client only)";
+    char buffer[100];
+    memset(buffer, 0, 100);
+    unsigned current = 0;
+    wattron(ip_scene, COLOR_PAIR(1));
+
+    WINDOW *info_scene = newwin(2, width, height - 3, 0);
+
+    /* Initial Refresh */
+    wrefresh(background_scene);
+    show_menu(side_scene, side_title, entries, length, alignment, highlight);
+    show_txtfld(ip_scene, ip_title, buffer, txtindex, highlight);
+    show_info(info_scene, Center, "");
+
+    /* Get the choice */
+    while (TRUE) {
+        int in = wgetch(background_scene);
+        switch (in) {
+            case KEY_DOWN:
+                highlight = (highlight + 1) % (length + 1);
+                break;
+            case KEY_UP:
+                highlight = (highlight + length) % (length + 1);
+                break;
+            case 10:
+                if (highlight < length)
+                    choice = highlight;
+                break;
+            case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '0': case '.':
+                if (highlight == txtindex && current < 100) {
+                    buffer[current++] = in;
+                }
+                break;
+            case 127:
+                if (highlight == txtindex) {
+                    buffer[--current] = '\0';
+                }
+                break;
+        }
+
+        /* Update */
+        show_menu(side_scene, side_title, entries, length, alignment, highlight);
+        show_txtfld(ip_scene, ip_title, buffer, txtindex, highlight);
+
+        /* Init game */
+
+        if (choice == 0) { // Server
+            USock sockfd;
+            if ((sockfd = create_server(info_scene)) == ERROR ) {
+                choice = -1;
+                continue;
+            }
+            init_server(width, height, Multiplayer, sockfd);
+            close_usocket(sockfd);
+            break;
+        } else if (choice == 1) { // Client
+            char *ip = buffer;
+            USock sockfd;
+            if ((sockfd = create_client(ip, info_scene)) == ERROR) {
+                choice = -1;
+                continue;
+            }
+            init_client(width, height, sockfd);
+            close_usocket(sockfd);
+            break;
+        } else if (choice == 2) { // Back
+            return;
+        }
+    }
+}
+
+void show_menu(WINDOW *menu_scene, const char *title, const char *entries[], const unsigned length, const MAlign alignment, const int hlt) {
+    /* Clear */
+    wclear(menu_scene);
+    const unsigned x = getmaxx(menu_scene);
+    box(menu_scene, 0, 0);
+
+    /* Title */
+    wattron(menu_scene, A_BOLD);
+    mvwprintw(menu_scene, 1, (x - strlen(title)) / 2, title);
+    wattroff(menu_scene, A_BOLD);
+
+    /* Body */
+    for (unsigned i = 0; i < length; i++) {
+        if (hlt == i) {
+            wattron(menu_scene, A_REVERSE);
+        }
+        switch (alignment) {
+            case Center:
+                mvwprintw(menu_scene, i + 3, (x - strlen(entries[i])) / 2, entries[i]);
+                break;
+            case Left:
+                mvwprintw(menu_scene, i + 3, 3, entries[i]);
+                break;
+        }
+        if (hlt == i) {
+            wattroff(menu_scene, A_REVERSE);
+        }
+    }
+
+    /* Refresh */
+    wrefresh(menu_scene);
+}
+
+void show_txtfld(WINDOW* menu_scene, const char *title, const char *text, const unsigned txtindex, const unsigned hlt) {  
+    /* Clear */
+    wclear(menu_scene);
+    wrefresh(menu_scene);
+    box(menu_scene, 0, 0);
+
+    /* Title */
+    const unsigned x = getmaxx(menu_scene), y = getmaxy(menu_scene);
+    wattron(menu_scene, A_BOLD);
+    mvwprintw(menu_scene, 1, (x - strlen(title)) / 2, title);
+    wattroff(menu_scene, A_BOLD);
+
+    /* Body */
+    if (hlt == txtindex) {
+        wattron(menu_scene, A_REVERSE);
+        mvwprintw(menu_scene, y / 2, 3, "%s", text);
+        wattroff(menu_scene, A_REVERSE);
+    } else {
+        mvwprintw(menu_scene, y / 2, 3, "%s", text);
+    }
+
+    /* Refresh */
+    wrefresh(menu_scene);
+}
+
+void show_info(WINDOW *info_scene, const MAlign alignment, char *msg) { 
+    /* Clear */
+    wclear(info_scene);
+
+    /* Body */
+    unsigned x = getmaxx(info_scene);
+    switch (alignment) {
+        case Center:
+            mvwprintw(info_scene, 0, (x - strlen(msg)) / 2, msg);
+            break;
+        case Left:
+            mvwprintw(info_scene, 0, 3, msg);
+            break;
+    }
+
+    /* Refresh */
+    wrefresh(info_scene);
 }
