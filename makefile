@@ -26,46 +26,54 @@
 ##################################################################################
 
 # Variables
-obj_dir = bin
-src_dir = src
+OBJ_DIR = bin
+SRC_DIR = src
 
 ifeq ($(OS), Windows_NT) 
-	FLAGS = -lpdcurses -lws2_32
-	lib_dir = win
+	LIBFLAGS = ws2_32.lib pdcurses.lib
+	OBJFLAGS = /c /Wall /Fo:
+	EXECFLAGS = /Wall /Fe:
+	COMPILER = cl
+	DELETE = del
+	LIB_DIR = win
 else
-	FLAGS = -lncurses
-	lib_dir = unix
+	COMPILER = gcc
+	DELETE = rm
+	OBJFLAGS = -Wall -c -o
+	EXECFLAGS = -Wall -o
+	LIBFLAGS = -lncurses
+	LIB_DIR = unix
 endif
 
 
 # Targets
 .PHONY: all clean
 
-all: $(obj_dir)/labyrinth
+all: $(OBJ_DIR)/labyrinth
 
-$(obj_dir)/labyrinth: $(obj_dir)/auxiliary.o $(obj_dir)/gamescene.o $(obj_dir)/list.o $(obj_dir)/main.o $(obj_dir)/menu.o $(obj_dir)/connect.o $(obj_dir)/transmit.o
-	gcc -Wall  -o $(obj_dir)/labyrinth $(obj_dir)/main.o $(obj_dir)/menu.o $(obj_dir)/gamescene.o $(obj_dir)/connect.o $(obj_dir)/transmit.o $(obj_dir)/auxiliary.o $(obj_dir)/list.o $(FLAGS)
+$(OBJ_DIR)/labyrinth: $(OBJ_DIR)/auxiliary.o $(OBJ_DIR)/gamescene.o $(OBJ_DIR)/list.o $(OBJ_DIR)/main.o $(OBJ_DIR)/menu.o $(OBJ_DIR)/connect.o $(OBJ_DIR)/transmit.o
+	$(COMPILER) $(EXECFLAGS) $(OBJ_DIR)/labyrinth $(OBJ_DIR)/main.o $(OBJ_DIR)/menu.o $(OBJ_DIR)/gamescene.o $(OBJ_DIR)/connect.o $(OBJ_DIR)/transmit.o $(OBJ_DIR)/auxiliary.o $(OBJ_DIR)/list.o $(LIBFLAGS)
 
-$(obj_dir)/auxiliary.o: $(src_dir)/auxiliary.c $(src_dir)/auxiliary.h
-	gcc -c -Wall -o $(obj_dir)/auxiliary.o $(src_dir)/auxiliary.c
+$(OBJ_DIR)/auxiliary.o: $(SRC_DIR)/auxiliary.c $(SRC_DIR)/auxiliary.h
+	$(COMPILER) $(OBJFLAGS) $(OBJ_DIR)/auxiliary.o $(SRC_DIR)/auxiliary.c
 
-$(obj_dir)/gamescene.o: $(src_dir)/gamescene.c $(src_dir)/gamescene.h
-	gcc -c -Wall -o $(obj_dir)/gamescene.o $(src_dir)/gamescene.c
+$(OBJ_DIR)/gamescene.o: $(SRC_DIR)/gamescene.c $(SRC_DIR)/gamescene.h
+	$(COMPILER) $(OBJFLAGS) $(OBJ_DIR)/gamescene.o $(SRC_DIR)/gamescene.c
 
-$(obj_dir)/list.o: $(src_dir)/list.c $(src_dir)/list.h
-	gcc -c -Wall -o $(obj_dir)/list.o $(src_dir)/list.c
+$(OBJ_DIR)/list.o: $(SRC_DIR)/list.c $(SRC_DIR)/list.h
+	$(COMPILER) $(OBJFLAGS) $(OBJ_DIR)/list.o $(SRC_DIR)/list.c
 	
-$(obj_dir)/main.o: $(src_dir)/main.c $(src_dir)/main.h
-	gcc -c -Wall -o $(obj_dir)/main.o $(src_dir)/main.c
+$(OBJ_DIR)/main.o: $(SRC_DIR)/main.c $(SRC_DIR)/main.h
+	$(COMPILER) $(OBJFLAGS) $(OBJ_DIR)/main.o $(SRC_DIR)/main.c
 
-$(obj_dir)/menu.o: $(src_dir)/menu.c $(src_dir)/menu.h
-	gcc -c -Wall -o $(obj_dir)/menu.o $(src_dir)/menu.c
+$(OBJ_DIR)/menu.o: $(SRC_DIR)/menu.c $(SRC_DIR)/menu.h
+	$(COMPILER) $(OBJFLAGS) $(OBJ_DIR)/menu.o $(SRC_DIR)/menu.c
 
-$(obj_dir)/connect.o: $(src_dir)/$(lib_dir)/connect.c $(src_dir)/connect.h
-	gcc -c -Wall -o $(obj_dir)/connect.o $(src_dir)/$(lib_dir)/connect.c 
+$(OBJ_DIR)/connect.o: $(SRC_DIR)/$(LIB_DIR)/connect.c $(SRC_DIR)/connect.h
+	$(COMPILER) $(OBJFLAGS) $(OBJ_DIR)/connect.o $(SRC_DIR)/$(LIB_DIR)/connect.c 
 
-$(obj_dir)/transmit.o: $(src_dir)/transmit.c $(src_dir)/transmit.h
-	gcc -c -Wall -o $(obj_dir)/transmit.o $(src_dir)/transmit.c 
+$(OBJ_DIR)/transmit.o: $(SRC_DIR)/transmit.c $(SRC_DIR)/transmit.h
+	$(COMPILER) $(OBJFLAGS) $(OBJ_DIR)/transmit.o $(SRC_DIR)/transmit.c 
 
 clean:
-	rm -f $(obj_dir)/*.o
+	$(DELETE) $(OBJ_DIR)/*.o $(OBJ_DIR)/*.obj
