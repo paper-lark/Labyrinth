@@ -14,7 +14,7 @@ As of now, there are two ways to run the game:
 * Build the game from source
 * Run the pre-built binary
 
-*__Please note__* The game is still in development, so at some point binaries may be unavailable. Sorry for the inconvenience.
+*__Please note:__* The game is still in development, so at some point binaries may be unavailable. Sorry for the inconvenience.
 
 ### Installation: Build program
 Before you start make sure you have a C compiler and ```cmake``` utility installed on your computer. You will also need ```pdcurses``` library (Windows) or ```ncurses``` library (Linux, macOS). Once you have everything on your computer, simply clone the repository and build it with the following:
