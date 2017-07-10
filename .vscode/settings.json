@@ -32,6 +32,8 @@
         "winresrc.h": "c",
         "winsock2.h": "c",
         "ws2tcpip.h": "c",
-        "combaseapi.h": "c"
+        "combaseapi.h": "c",
+        "wincrypt.h": "c",
+        "winsvc.h": "c"
     }
 }

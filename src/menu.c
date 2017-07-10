@@ -42,7 +42,7 @@ void init_help(const int width, const int height);
 void init_about(const int width, const int height);
 void init_exit(const int width, const int height);
 void show_info(WINDOW *info_scene, const MAlign alignment, char *msg);
-void show_menu(WINDOW *menu_scene, const char *title, const char *entries[], const unsigned length, const MAlign alignment, const int hlt);
+void show_menu(WINDOW *menu_scene, const char *title, const char *entries[], const unsigned length, const MAlign alignment, const unsigned hlt);
 void show_txtfld(WINDOW* menu_scene, const char *title, const char *text, const unsigned txtindex, const unsigned hlt);
 
 /* Implementation */
@@ -53,12 +53,12 @@ void menu(const int width, const int height) {
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *menu_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(menu_scene, TRUE);
-    unsigned highlight = 0, choice = -1;
+    unsigned highlight = 0, choice = (unsigned)-1;
     const char *title = "Labyrinth";
     const char *entries[] = { "Play",
                               "Settings",
                               "Help",
-                              "About",
+                              "About me",
                               "Exit"};
     const unsigned length = 5;
     wattron(menu_scene, COLOR_PAIR(1));
@@ -89,26 +89,25 @@ void menu(const int width, const int height) {
             wclear(background_scene);
             wrefresh(background_scene);
             show_menu(menu_scene, title, entries, length, alignment, highlight);
-            cbreak();
-            choice = -1;
+            choice = (unsigned)-1;
         } else if (choice == 1) { // Settings
             init_settings(width, height);
             wclear(background_scene);
             wrefresh(background_scene);
             show_menu(menu_scene, title, entries, length, alignment, highlight);
-            choice = -1;
+            choice = (unsigned)-1;
         } else if (choice == 2) { // Help
             init_help(width, height);
             wclear(background_scene);
             wrefresh(background_scene);
             show_menu(menu_scene, title, entries, length, alignment, highlight);
-            choice = -1;
+            choice = (unsigned)-1;
         } else if (choice == 3) { // About
             init_about(width, height);
             wclear(background_scene);
             wrefresh(background_scene);
             show_menu(menu_scene, title, entries, length, alignment, highlight);
-            choice = -1;
+            choice = (unsigned)-1;
         } else if (choice == 4) { // Exit
             init_exit(width, height);
             break;
@@ -176,7 +175,7 @@ void init_about(const int width, const int height) {
     mvwprintw(about_scene, 5, (mwidth - 41) / 2, "Software is distributed under MIT License");
     mvwprintw(about_scene, 6, (mwidth - 24) / 2, "Created by Max Zhuravsky");
     mvwprintw(about_scene, 7, (mwidth - 12) / 2, "Moscow, 2017");
-    mvwprintw(about_scene, 9, (mwidth - 13) / 2, VERSION);
+    mvwprintw(about_scene, 9, (mwidth - 11 - strlen(BUILD_TYPE)) / 2, "Version %d.%d (%s)", VERSION_MAJOR, VERSION_MINOR, BUILD_TYPE);
     mvwprintw(about_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to return>");
 
     wrefresh(about_scene);
@@ -234,7 +233,7 @@ void init_select(const int width, const int height) {
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *setup_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
     keypad(setup_scene, TRUE);
-    unsigned highlight = 0, choice = -1;
+    unsigned highlight = 0, choice = (unsigned)-1;
     const char *title = "Select Game Mode";
     const char *entries[] = { "Single Player",
                               "Hotseat",
@@ -248,7 +247,7 @@ void init_select(const int width, const int height) {
     show_menu(setup_scene, title, entries, length, alignment, highlight);
 
     /* Get the choice */
-    while (choice == -1) {
+    while (choice == (unsigned)-1) {
         int in = wgetch(setup_scene);
         switch (in) {
             case KEY_DOWN:
@@ -279,7 +278,7 @@ void init_mpmenu(const int width, const int height) { // Client is the minotaur,
     WINDOW *background_scene = newwin(height, width, 0, 0);
     WINDOW *side_scene = newwin(8, mwidth, (height - 14) / 2, (width - mwidth) / 2);
     keypad(background_scene, TRUE);
-    unsigned highlight = 0, choice = -1;
+    unsigned highlight = 0, choice = (unsigned)-1;
     const char *side_title = "Choose your side";
     const char *entries[] = { "Server",
                               "Client",
@@ -319,7 +318,7 @@ void init_mpmenu(const int width, const int height) { // Client is the minotaur,
                 break;
             case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '0': case '.':
                 if (highlight == txtindex && current < 100) {
-                    buffer[current++] = in;
+                    buffer[current++] = (char)in;
                 }
                 break;
             case KEY_BACKSPACE: case 127: case 8:
@@ -338,7 +337,7 @@ void init_mpmenu(const int width, const int height) { // Client is the minotaur,
         if (choice == 0) { // Server
             USock sockfd;
             if ((sockfd = create_server(info_scene)) == USOCK_ERROR) {
-                choice = -1;
+                choice = (unsigned)-1;
                 continue;
             }
             init_server(width, height, Multiplayer, sockfd);
@@ -348,7 +347,7 @@ void init_mpmenu(const int width, const int height) { // Client is the minotaur,
             char *ip = buffer;
             USock sockfd;
             if ((sockfd = create_client(ip, info_scene)) == USOCK_ERROR) {
-                choice = -1;
+                choice = (unsigned)-1;
                 continue;
             }
             init_client(width, height, sockfd);
@@ -360,7 +359,7 @@ void init_mpmenu(const int width, const int height) { // Client is the minotaur,
     }
 }
 
-void show_menu(WINDOW *menu_scene, const char *title, const char *entries[], const unsigned length, const MAlign alignment, const int hlt) {
+void show_menu(WINDOW *menu_scene, const char *title, const char *entries[], const unsigned length, const MAlign alignment, const unsigned hlt) {
     /* Clear */
     wclear(menu_scene);
     const unsigned x = getmaxx(menu_scene);

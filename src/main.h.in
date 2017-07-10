@@ -34,10 +34,8 @@
 /* Curses */
 #if defined _WIN64 || defined _WIN32
     #include <curses.h>
-#elif defined __linux__
+#else
     #include <ncurses.h>
-#elif defined __APPLE__
-    #include <ncursesw/ncurses.h>
 #endif
 
 /* Networking */
@@ -62,8 +60,10 @@
 #endif
 
 /* MACRO */
-#define VERSION "Version 3.0.0 (WIP)"
 #define MIN_WIDTH 64
 #define MIN_HEIGHT 16
+#define VERSION_MAJOR @Labyrinth_VERSION_MAJOR@
+#define VERSION_MINOR @Labyrinth_VERSION_MINOR@
+#define BUILD_TYPE "@Labyrinth_BUILD_TYPE@" //::TODO change?
 
 #endif

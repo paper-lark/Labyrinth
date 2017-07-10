@@ -225,6 +225,8 @@ void init_server(const int width, const int height, const GameMode mode, USock s
     free(door);
     free(target);
     free(minotaur);
+    nocbreak();
+    cbreak();
 }
 
 void init_client(const int width, const int height, const USock sockfd) {
