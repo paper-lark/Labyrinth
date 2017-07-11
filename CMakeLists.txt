@@ -32,7 +32,7 @@ project(Labyrinth C)
 # Version
 set(Labyrinth_VERSION_MAJOR 3)
 set(Labyrinth_VERSION_MINOR 0)
-set(Labyrinth_BUILD_TYPE "Prerelease")
+set(Labyrinth_BUILD_TYPE "Release")
 
 # Configure paths
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)

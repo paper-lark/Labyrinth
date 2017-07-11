@@ -64,6 +64,6 @@
 #define MIN_HEIGHT 16
 #define VERSION_MAJOR @Labyrinth_VERSION_MAJOR@
 #define VERSION_MINOR @Labyrinth_VERSION_MINOR@
-#define BUILD_TYPE "@Labyrinth_BUILD_TYPE@" //::TODO change?
+#define BUILD_TYPE "@Labyrinth_BUILD_TYPE@"
 
 #endif

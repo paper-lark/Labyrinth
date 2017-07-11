@@ -34,7 +34,7 @@
 
 /* Types */
 typedef enum {
-    PlayerWins, MinotaurWins, Location
+    HumanWins, MinotaurWins, Location, InProgress
 } InfoType;
 
 /* Prototypes */

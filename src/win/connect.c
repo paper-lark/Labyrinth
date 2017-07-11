@@ -68,7 +68,7 @@ USock create_server(WINDOW *info_scene) {
     struct sockaddr_storage clientinfo;
     int size = sizeof clientinfo;
     listen(serverfd, 1);
-    show_info(info_scene, Left, "Waiting for incoming connection...");
+    show_info(info_scene, Center, "Waiting for incoming connection...");
 
     /* Accept */
     USock clientfd = accept(serverfd, (struct sockaddr *)&clientinfo, &size);

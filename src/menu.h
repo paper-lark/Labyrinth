@@ -33,6 +33,10 @@ typedef enum {
     Center, Left
 } MAlign;
 
+typedef enum {
+    Human = 0, Minotaur = 1
+} Affiliation;
+
 /* Prototypes */
 void menu(const int width, const int height);
 void show_info(WINDOW *info_scene, const MAlign alignment, char *msg);

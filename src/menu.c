@@ -134,7 +134,7 @@ void init_help(const int width, const int height) {
     /* Body */
     mvwprintw(help_scene, 3, 3, "Hey there, young (well, maybe not) labyrinth explorer!");
     mvwprintw(help_scene, 4, 3, "Here's a brief legend for you, so you wouldn't get lost :)");
-    mvwprintw(help_scene, 5, 7, "%c - player", PLAYER);
+    mvwprintw(help_scene, 5, 7, "%c - human", HUMAN);
     mvwprintw(help_scene, 6, 7, "%c - minotaur", MINOTAUR);
     mvwprintw(help_scene, 7, 7, "%c - fog", UNKNOWN);
     mvwprintw(help_scene, 8, 7, "%c - wall", WALL);
@@ -172,7 +172,7 @@ void init_about(const int width, const int height) {
         wattroff(about_scene, COLOR_PAIR(6));
         wattroff(about_scene, A_BOLD);
     }
-    mvwprintw(about_scene, 5, (mwidth - 41) / 2, "Software is distributed under MIT License");
+    mvwprintw(about_scene, 5, (mwidth - 41) / 2, "Software is distributed under terms of MIT License");
     mvwprintw(about_scene, 6, (mwidth - 24) / 2, "Created by Max Zhuravsky");
     mvwprintw(about_scene, 7, (mwidth - 12) / 2, "Moscow, 2017");
     mvwprintw(about_scene, 9, (mwidth - 11 - strlen(BUILD_TYPE)) / 2, "Version %d.%d (%s)", VERSION_MAJOR, VERSION_MINOR, BUILD_TYPE);
@@ -265,28 +265,31 @@ void init_select(const int width, const int height) {
 
     /* Init game */
     if (choice == Hotseat || choice == SinglePlayer) {
-        init_server(width, height, choice, (USock) NULL);
+        init_server(width, height, choice, Human, (USock) NULL);
+        return;
     } else if (choice == Multiplayer) {
         init_mpmenu(width, height);
+        return;
     }
 }
 
-void init_mpmenu(const int width, const int height) { // Client is the minotaur, server is the player
+void init_mpmenu(const int width, const int height) {
     /* Init scene */
     const unsigned mwidth = 64;
     const MAlign alignment = Center;
     WINDOW *background_scene = newwin(height, width, 0, 0);
-    WINDOW *side_scene = newwin(8, mwidth, (height - 14) / 2, (width - mwidth) / 2);
+    WINDOW *side_scene = newwin(10, mwidth, (height - 14) / 2, (width - mwidth) / 2);
     keypad(background_scene, TRUE);
     unsigned highlight = 0, choice = (unsigned)-1;
     const char *side_title = "Choose your side";
-    const char *entries[] = { "Server",
+    const char *entries[] = { "Server (Human)",
+                              "Server (Minotaur)",
                               "Client",
                               "Back"};
-    const unsigned length = 3;
+    const unsigned length = 4;
     wattron(side_scene, COLOR_PAIR(1));
 
-    WINDOW *ip_scene = newwin(4, mwidth, (height - 14) / 2 + 10, (width - mwidth) / 2);
+    WINDOW *ip_scene = newwin(4, mwidth, (height - 14) / 2 + 12, (width - mwidth) / 2);
     const unsigned txtindex = length;
     const char *ip_title = "IPv4 to connect (for client only)";
     char buffer[100];
@@ -333,27 +336,41 @@ void init_mpmenu(const int width, const int height) { // Client is the minotaur,
         show_txtfld(ip_scene, ip_title, buffer, txtindex, highlight);
 
         /* Init game */
-
-        if (choice == 0) { // Server
+        if (choice == 0) { // Server (Human)
             USock sockfd;
             if ((sockfd = create_server(info_scene)) == USOCK_ERROR) {
                 choice = (unsigned)-1;
                 continue;
             }
-            init_server(width, height, Multiplayer, sockfd);
+            Affiliation client_side = Minotaur;
+            send(sockfd, &client_side, sizeof(Affiliation), 0);
+            init_server(width, height, Multiplayer, Human, sockfd);
             close_usocket(sockfd);
-            break;
-        } else if (choice == 1) { // Client
+            return;
+        } else if (choice == 1) { // Server (Minotaur)
+            USock sockfd;
+            if ((sockfd = create_server(info_scene)) == USOCK_ERROR) {
+                choice = (unsigned)-1;
+                continue;
+            }
+            Affiliation client_side = Human;
+            send(sockfd, &client_side, sizeof(Affiliation), 0);
+            init_server(width, height, Multiplayer, Minotaur, sockfd);
+            close_usocket(sockfd);
+            return;
+        } else if (choice == 2) { // Client
             char *ip = buffer;
             USock sockfd;
             if ((sockfd = create_client(ip, info_scene)) == USOCK_ERROR) {
                 choice = (unsigned)-1;
                 continue;
             }
-            init_client(width, height, sockfd);
+            Affiliation side;
+            recv(sockfd, &side, sizeof(Affiliation), 0);
+            init_client(width, height, side, sockfd);
             close_usocket(sockfd);
-            break;
-        } else if (choice == 2) { // Back
+            return;
+        } else if (choice == 3) { // Back
             return;
         }
     }
@@ -363,6 +380,8 @@ void show_menu(WINDOW *menu_scene, const char *title, const char *entries[], con
     /* Clear */
     wclear(menu_scene);
     const unsigned x = getmaxx(menu_scene);
+    const unsigned y = getmaxy(menu_scene);
+    const unsigned gap = (y - length - 3) / 6;
     box(menu_scene, 0, 0);
 
     /* Title */
@@ -377,10 +396,10 @@ void show_menu(WINDOW *menu_scene, const char *title, const char *entries[], con
         }
         switch (alignment) {
             case Center:
-                mvwprintw(menu_scene, i + 3, (x - strlen(entries[i])) / 2, entries[i]);
+                mvwprintw(menu_scene, i + 3 + gap, (x - strlen(entries[i])) / 2, entries[i]);
                 break;
             case Left:
-                mvwprintw(menu_scene, i + 3, 3, entries[i]);
+                mvwprintw(menu_scene, i + 3 + gap, 3, entries[i]);
                 break;
         }
         if (hlt == i) {

@@ -29,13 +29,13 @@
 #define GAMESCENE_H
 
 /* Headers */
-#include <assert.h>
 #include "auxiliary.h"
 #include "main.h"
+#include "menu.h"
 
 /* MACRO */
 #define DELAY 2
-#define PLAYER 'o'
+#define HUMAN 'o'
 #define WALL '#'
 #define EMPTY ' '
 #define EXIT '^'
@@ -48,6 +48,6 @@
 typedef enum {
     SinglePlayer = 0, Hotseat = 1, Multiplayer = 2
 } GameMode;
-void init_server(const int width, const int height, const GameMode mode, const USock sockfd);
-void init_client(const int width, const int height, const USock sockfd);
+void init_server(const int width, const int height, const GameMode mode, const Affiliation side, const USock sockfd);
+void init_client(const int width, const int height, const Affiliation side, const USock sockfd);
 #endif
