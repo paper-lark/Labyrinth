@@ -34,7 +34,9 @@ set(Labyrinth_VERSION_MAJOR 3)
 set(Labyrinth_VERSION_MINOR 0)
 set(Labyrinth_BUILD_TYPE "Release")
 
-# Configure paths
+# Configure variables
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 set(CMAKE_CURRENT_SOURCE_DIR ${PROJECT_SOURCE_DIR})
@@ -59,11 +61,6 @@ else()
 endif()
 
 # Build
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-if (NOT WIN32)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-incompatible-pointer-types-discards-qualifiers")
-endif()
-
 set(SRC_FILES ${PROJECT_SOURCE_DIR}/main.c ${PROJECT_SOURCE_DIR}/menu.c ${PROJECT_SOURCE_DIR}/gamescene.c ${PROJECT_SOURCE_DIR}/transmit.c ${PROJECT_SOURCE_DIR}/auxiliary.c ${PROJECT_SOURCE_DIR}/list.c)
 if(WIN32)
     set(SRC_FILES ${SRC_FILES} ${PROJECT_SOURCE_DIR}/win/connect.c)

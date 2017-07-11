@@ -25,7 +25,13 @@
 #                  Author:  Max Zhuravsky <paperlark@yandex.ru>                  #
 ##################################################################################
 
-.PHONY: all
-all:
-	cmake -H. -Bbuild
-	cmake --build build
+.PHONY: all debug release
+all: release
+
+release:
+	cmake -DCMAKE_BUILD_TYPE=Release -H. -Bbuild
+	cmake --build build --config Release
+
+debug:
+	cmake -DCMAKE_BUILD_TYPE=Release -H. -Bbuild
+	cmake --build build --config Debug
