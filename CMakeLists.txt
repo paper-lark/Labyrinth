@@ -34,13 +34,11 @@ set(Labyrinth_VERSION_MAJOR 3)
 set(Labyrinth_VERSION_MINOR 0)
 set(Labyrinth_BUILD_TYPE "Release")
 
-# Configure variables
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
-set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
+# Configure project paths
 set(PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
-set(CMAKE_CURRENT_SOURCE_DIR ${PROJECT_SOURCE_DIR})
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 configure_file("${PROJECT_SOURCE_DIR}/main.h.in" 
                "${PROJECT_BINARY_DIR}/include/main.h")
 include_directories("${PROJECT_BINARY_DIR}/include")
@@ -60,17 +58,25 @@ else()
     endif()
 endif()
 
-# Build
-set(SRC_FILES ${PROJECT_SOURCE_DIR}/main.c ${PROJECT_SOURCE_DIR}/menu.c ${PROJECT_SOURCE_DIR}/gamescene.c ${PROJECT_SOURCE_DIR}/transmit.c ${PROJECT_SOURCE_DIR}/auxiliary.c ${PROJECT_SOURCE_DIR}/list.c)
+# Configure compiler flags
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
+
+# Build program
+set(SRC_FILES ${PROJECT_SOURCE_DIR}/main.c ${PROJECT_SOURCE_DIR}/menu.c ${PROJECT_SOURCE_DIR}/gamescene.c ${PROJECT_SOURCE_DIR}/transmit.c ${PROJECT_SOURCE_DIR}/auxiliary.c)
 if(WIN32)
     set(SRC_FILES ${SRC_FILES} ${PROJECT_SOURCE_DIR}/win/connect.c)
 else()
     set(SRC_FILES ${SRC_FILES} ${PROJECT_SOURCE_DIR}/unix/connect.c)
 endif()
 add_executable(labyrinth ${SRC_FILES})
-
-message(STATUS "Executable is in ${EXECUTABLE_OUTPUT_PATH}")
-message(STATUS "Linking following libraries: ${LIBRARIES} ...")
-
+add_library(list STATIC ${PROJECT_SOURCE_DIR}/list.c)
+set(LIBRARIES ${LIBRARIES} list)
 target_link_libraries(labyrinth ${LIBRARIES})
+
+# Messages
+message(STATUS "Executables will be in ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+message(STATUS "Static libraries will be in ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
+message(STATUS "Module libraries will be in ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+message(STATUS "Following libraries linked: ${LIBRARIES} ...")
 
