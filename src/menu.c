@@ -41,7 +41,7 @@ void init_settings(const int width, const int height);
 void init_help(const int width, const int height);
 void init_about(const int width, const int height);
 void init_exit(const int width, const int height);
-void show_info(WINDOW *info_scene, const MAlign alignment, char *msg);
+void show_info(WINDOW *info_scene, const MAlign alignment, const TInfo type, const char *msg);
 void show_menu(WINDOW *menu_scene, const char *title, const char *entries[], const unsigned length, const MAlign alignment, const unsigned hlt);
 void show_txtfld(WINDOW* menu_scene, const char *title, const char *text, const unsigned txtindex, const unsigned hlt);
 
@@ -56,11 +56,10 @@ void menu(const int width, const int height) {
     unsigned highlight = 0, choice = (unsigned)-1;
     const char *title = "Labyrinth";
     const char *entries[] = { "Play",
-                              "Settings",
                               "Help",
                               "About me",
                               "Exit"};
-    const unsigned length = 5;
+    const unsigned length = 4;
     wattron(menu_scene, COLOR_PAIR(1));
 
     /* Initial Refresh */
@@ -90,25 +89,19 @@ void menu(const int width, const int height) {
             wrefresh(background_scene);
             show_menu(menu_scene, title, entries, length, alignment, highlight);
             choice = (unsigned)-1;
-        } else if (choice == 1) { // Settings
-            init_settings(width, height);
-            wclear(background_scene);
-            wrefresh(background_scene);
-            show_menu(menu_scene, title, entries, length, alignment, highlight);
-            choice = (unsigned)-1;
-        } else if (choice == 2) { // Help
+        } else if (choice == 1) { // Help
             init_help(width, height);
             wclear(background_scene);
             wrefresh(background_scene);
             show_menu(menu_scene, title, entries, length, alignment, highlight);
             choice = (unsigned)-1;
-        } else if (choice == 3) { // About
+        } else if (choice == 2) { // About
             init_about(width, height);
             wclear(background_scene);
             wrefresh(background_scene);
             show_menu(menu_scene, title, entries, length, alignment, highlight);
             choice = (unsigned)-1;
-        } else if (choice == 4) { // Exit
+        } else if (choice == 3) { // Exit
             init_exit(width, height);
             break;
         }
@@ -201,31 +194,6 @@ void init_exit(const int width, const int height) {
     wgetch(exit_scene);
 }
 
-void init_settings(const int width, const int height) {
-    const unsigned mwidth = 64, mheight = 15;
-    WINDOW *background_scene = newwin(height, width, 0, 0);
-    wrefresh(background_scene);
-
-    WINDOW *settings_scene = newwin(mheight, mwidth, (height - mheight) / 2, (width - mwidth) / 2);
-    keypad(settings_scene, TRUE);
-    wattron(settings_scene, COLOR_PAIR(1));
-    box(settings_scene, 0, 0);
-
-    /* Title */
-    wattron(settings_scene, A_BOLD);
-    mvwprintw(settings_scene, 1, (mwidth - 4) / 2, "About");
-    wattroff(settings_scene, A_BOLD);
-
-    /* Body */
-    mvwprintw(settings_scene, 3, (mwidth - 52) / 2, "Oops! Looks like this menu has not been created yet.");
-    mvwprintw(settings_scene, 4, (mwidth - 15) / 2, "Don't panic! :)");
-    mvwprintw(settings_scene, 4, (mwidth - 56) / 2, "We'll do our best to get it working as soon as possible.");
-    mvwprintw(settings_scene, mheight - 2, (mwidth - 25) / 2, "<Press any key to return>");
-
-    wrefresh(settings_scene);
-    wgetch(settings_scene);
-}
-
 void init_select(const int width, const int height) {
     /* Init scene */
     const unsigned mwidth = 64, mheight = 15;
@@ -303,7 +271,7 @@ void init_mpmenu(const int width, const int height) {
     wrefresh(background_scene);
     show_menu(side_scene, side_title, entries, length, alignment, highlight);
     show_txtfld(ip_scene, ip_title, buffer, txtindex, highlight);
-    show_info(info_scene, Center, "");
+    show_info(info_scene, Center, Message, "");
 
     /* Get the choice */
     while (TRUE) {
@@ -340,6 +308,12 @@ void init_mpmenu(const int width, const int height) {
             USock sockfd;
             if ((sockfd = create_server(info_scene)) == USOCK_ERROR) {
                 choice = (unsigned)-1;
+                /* Refresh */
+                // wclear(background_scene);
+                // wrefresh(background_scene);
+                // show_menu(side_scene, side_title, entries, length, alignment, highlight);
+                // show_txtfld(ip_scene, ip_title, buffer, txtindex, highlight);
+                // wrefresh(info_scene);
                 continue;
             }
             Affiliation client_side = Minotaur;
@@ -351,6 +325,12 @@ void init_mpmenu(const int width, const int height) {
             USock sockfd;
             if ((sockfd = create_server(info_scene)) == USOCK_ERROR) {
                 choice = (unsigned)-1;
+                /* Refresh */
+                // wclear(background_scene);
+                // wrefresh(background_scene);
+                // show_menu(side_scene, side_title, entries, length, alignment, highlight);
+                // show_txtfld(ip_scene, ip_title, buffer, txtindex, highlight);
+                // wrefresh(info_scene);
                 continue;
             }
             Affiliation client_side = Human;
@@ -363,6 +343,12 @@ void init_mpmenu(const int width, const int height) {
             USock sockfd;
             if ((sockfd = create_client(ip, info_scene)) == USOCK_ERROR) {
                 choice = (unsigned)-1;
+                /* Refresh */
+                // wclear(background_scene);
+                // wrefresh(background_scene);
+                // show_menu(side_scene, side_title, entries, length, alignment, highlight);
+                // show_txtfld(ip_scene, ip_title, buffer, txtindex, highlight);
+                // wrefresh(info_scene);
                 continue;
             }
             Affiliation side;
@@ -436,19 +422,38 @@ void show_txtfld(WINDOW* menu_scene, const char *title, const char *text, const 
     wrefresh(menu_scene);
 }
 
-void show_info(WINDOW *info_scene, const MAlign alignment, char *msg) { 
+void show_info(WINDOW *info_scene, const MAlign alignment, const TInfo type, const char *msg) { 
     /* Clear */
     wclear(info_scene);
 
     /* Body */
-    unsigned x = getmaxx(info_scene);
+    const unsigned width = getmaxx(info_scene);
+    unsigned x;
     switch (alignment) {
         case Center:
-            mvwprintw(info_scene, 0, (x - strlen(msg)) / 2, msg);
+            x = (width - strlen(msg)) / 2;
             break;
         case Left:
-            mvwprintw(info_scene, 0, 3, msg);
+            x = 2;
             break;
+        default:
+            fprintf(stderr, "Unknown alignment option\n");
+            exit(1);
+    }
+
+    switch(type) {
+        case Log:
+            mvwprintw(info_scene, 0, x, "LOG: %s", msg);
+            break;
+        case Message:
+            mvwprintw(info_scene, 0, x, msg);
+            break; 
+        case Error:
+            mvwprintw(info_scene, 0, x, "ERROR: %s", msg);
+            break;
+        default:
+            fprintf(stderr, "Unknown message type option\n");
+            exit(1);
     }
 
     /* Refresh */

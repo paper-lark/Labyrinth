@@ -34,6 +34,11 @@
         "ws2tcpip.h": "c",
         "combaseapi.h": "c",
         "wincrypt.h": "c",
-        "winsvc.h": "c"
+        "winsvc.h": "c",
+        "menu.h": "c",
+        "errno.h": "c",
+        "string.h": "c",
+        "unistd.h": "c",
+        "wchar.h": "c"
     }
 }

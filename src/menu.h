@@ -34,11 +34,15 @@ typedef enum {
 } MAlign;
 
 typedef enum {
+    Log, Message, Error
+} TInfo;
+
+typedef enum {
     Human = 0, Minotaur = 1
 } Affiliation;
 
 /* Prototypes */
 void menu(const int width, const int height);
-void show_info(WINDOW *info_scene, const MAlign alignment, char *msg);
+void show_info(WINDOW *info_scene, const MAlign alignment, const TInfo type, const char *msg);
 
 #endif

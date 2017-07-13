@@ -32,29 +32,47 @@
 #include "auxiliary.h"
 
 /* Implementation */
-int terminate(WINDOW *info_scene, InfoType status, Affiliation side) {
-    if (status == HumanWins) {
+int terminate(const GameStatus status, const Affiliation side, WINDOW *info_scene) {
+    if (status == Caught) {
+        // Minotaur won
         switch(side) {
         case Human:
-            show_info(info_scene, Center, "<Congratulations! You escaped! Press ENTER to continue>");
+            show_info(info_scene, Center, Message, "We're caught. We'll spend the rest of our life here...");
             break;
         case Minotaur:
-            show_info(info_scene, Center, "<Human escaped. What a shame! Press ENTER to continue>");
+            show_info(info_scene, Center, Message, "Nasty human is caught! Rooooar!!!");
             break;
         }
         return TRUE;
-    } else if (status == MinotaurWins) {
+    } else if (status == Escaped) {
+        // Player won
         switch(side) {
         case Human:
-            show_info(info_scene, Center, "<We're caught. Now we'll spend the rest of life here... Press ENTER to continue>");
+            show_info(info_scene, Center, Message, "Congratulations! You escaped the labyrinth!");
             break;
         case Minotaur:
-            show_info(info_scene, Center, "<Nasty human is caught! Rooooar!!! Press ENTER to continue>");
+            show_info(info_scene, Center, Message, "Human escaped... Let's wait for the next one!");
             break;
         }
+        return TRUE;
+    } else if (status == ForceEnd) {
+        // Force end
+        show_info(info_scene, Center, Message, "The game was stopped. That's sad...");
         return TRUE;
     } else {
         return FALSE;
+    }
+}
+
+GameStatus update_status(const Point *human, const Point *minotaur, const Point *door, const GameStatus status) {
+    if (human->x == door->x && human->y == door->y) {
+        /* Human won */
+        return Escaped;
+    } else if (minotaur && human->x == minotaur->x && human->y == minotaur->y) {
+        /* Minotaur won */
+        return Caught;
+    } else {
+        return status;
     }
 }
 
@@ -69,7 +87,7 @@ void setup_game_scene(WINDOW *game_scene, const Point *size) {
     wattroff(game_scene, COLOR_PAIR(1));
 }
 
-void show_game(WINDOW *game_scene, const State **map, const Hidden **fog, const Point *size, const Point *human, const Point *door, const Point *minotaur) {
+void show_game(WINDOW *game_scene, State **map, Hidden **fog, const Point *size, const Point *human, const Point *door, const Point *minotaur) {
     
     /* Reveal current location */
     const static Point directions[] = { {.x = 0, .y = 1},
@@ -162,7 +180,7 @@ void init_server(const int width, const int height, const GameMode mode, const A
     halfdelay(DELAY);
 
     /* Create labyrinth */
-    InfoType status = InProgress;
+    GameStatus status = InProgress;
     State **map = create_labyrinth(size.x, size.y);
     Point *human = rand_position(map, size.x, size.y);
     Point *door = rand_position(map, size.x, size.y);
@@ -171,8 +189,15 @@ void init_server(const int width, const int height, const GameMode mode, const A
     if (mode == Hotseat || mode == Multiplayer)
         minotaur = pointat(makeodd(size.x / 2), makeodd(size.y / 2));
     if (mode == Multiplayer) {
-        send_point(sockfd, &size);
-        send_initial_info(sockfd, size, map, human, door, minotaur);
+        if ((send_point(sockfd, &size) == -1) || (send_initial_info(sockfd, size, map, human, door, minotaur) == -1)) {
+            free_st(map, size.x);
+            free_hid(fog, size.x);
+            free(human);
+            free(door);
+            free(minotaur);
+            nocbreak();
+            cbreak();
+        }
     }
 
     /* Take control */
@@ -199,37 +224,36 @@ void init_server(const int width, const int height, const GameMode mode, const A
 
     /* Logic */
     Point *target = malloc(sizeof(Point));
+    Direction delta = 0;
     while (TRUE) {
 
         /* All Modes */
         int input = wgetch(game_scene);
         switch (input) {
-            case KEY_DOWN:
-                target->x = server->x;
-                target->y = server->y + 1;
-                break;
             case KEY_UP:
+                delta = 1;
                 target->x = server->x;
                 target->y = server->y - 1;
                 break;
+            case KEY_DOWN:
+                delta = 2;
+                target->x = server->x;
+                target->y = server->y + 1;
+                break;
             case KEY_LEFT:
+                delta = 3;
                 target->x = server->x - 1;
                 target->y = server->y;
                 break;
             case KEY_RIGHT:
+                delta = 4;
                 target->x = server->x + 1;
                 target->y = server->y;
                 break;
             case 27:
-                switch(side) {
-                case Human:
-                    status = MinotaurWins;
-                    break;
-                case Minotaur:
-                    status = HumanWins;
-                    break;
-                }
+                status = ForceEnd;
             default:
+                delta = 0;
                 target->x = server->x;
                 target->y = server->y;
         }
@@ -238,6 +262,8 @@ void init_server(const int width, const int height, const GameMode mode, const A
             server->y = target->y;
             reveal(fog, server, size.x, size.y);
             show_game(game_scene, map, fog, &size, human, door, minotaur);
+        } else {
+            delta = 0;
         }
 
         /* Hotseat */
@@ -271,39 +297,24 @@ void init_server(const int width, const int height, const GameMode mode, const A
             }
         }
 
+        /* Update status */
+        status = update_status(human, minotaur, door, status);
+
         /* Multiplayer Mode */
         if (mode == Multiplayer) {
             /* Exchange status */
-            InfoType client_status;
-            send_status(sockfd, Location, server);
-            recv_status(sockfd, &client_status, client);
-
-            /* Terminate */
-            if (terminate(info_scene, client_status, side) == TRUE) {
-                break;
-            }
-
+            GameStatus client_status = 0;
+            if (send_status(sockfd, status, delta) == -1)
+                status = ForceEnd;
+            if (recv_status(sockfd, &client_status, client) == -1)
+                status = ForceEnd;
+            status = status > client_status ? status : client_status;
             /* Update screen */
             show_game(game_scene, map, fog, &size, human, door, minotaur);
         }
 
-        /* Check termination conditions */
-        if (human->x == door->x && human->y == door->y) {
-            /* Human won */
-            status = HumanWins;
-            if (mode == Multiplayer) {
-                send_status(sockfd, status, NULL); //Send the message to the client
-            }
-        } else if (minotaur && human->x == minotaur->x && human->y == minotaur->y) {
-            /* Minotaur won */
-            status = MinotaurWins;
-            if (mode == Multiplayer) {
-                send_status(sockfd, status, NULL); //Send the message to the client
-            }
-        }
-
         /* Terminate */
-        if (terminate(info_scene, status, side) == TRUE) {
+        if (terminate(status, side, info_scene)) {
             break;
         }
     }
@@ -329,12 +340,19 @@ void init_server(const int width, const int height, const GameMode mode, const A
 void init_client(const int width, const int height, const Affiliation side, const USock sockfd) {
     /* Receive info */
     Point size;
-    recv_point(sockfd, &size);
+    if (recv_point(sockfd, &size) == -1)
+        return;
     State **map = create_st(size.x, size.y);
     Point *human = malloc(sizeof(Point));
     Point *door = malloc(sizeof(Point));
     Point *minotaur = malloc(sizeof(Point));
-    recv_initial_info(sockfd, size, map, human, door, minotaur);
+    if (recv_initial_info(sockfd, size, map, human, door, minotaur) == -1) {
+        free_st(map, size.x);
+        free(human);
+        free(door);
+        free(minotaur);
+        return;
+    }
 
     /* Take control */
     Point *client, *server;
@@ -357,7 +375,7 @@ void init_client(const int width, const int height, const Affiliation side, cons
     halfdelay(DELAY);
 
     /* Create labyrinth */
-    InfoType status = InProgress;
+    GameStatus status = InProgress;
     Hidden **fog = create_hid(size.x, size.y);
     reveal(fog, client, size.x, size.y);
 
@@ -368,35 +386,34 @@ void init_client(const int width, const int height, const Affiliation side, cons
 
     /* Logic */
     Point *target = malloc(sizeof(Point));
+    Direction delta = 0;
     while (TRUE) {
         int input = wgetch(game_scene);
         switch (input) {
-            case KEY_DOWN:
-                target->x = client->x;
-                target->y = client->y + 1;
-                break;
             case KEY_UP:
+                delta = 1;
                 target->x = client->x;
                 target->y = client->y - 1;
                 break;
+            case KEY_DOWN:
+                delta = 2;
+                target->x = client->x;
+                target->y = client->y + 1;
+                break;
             case KEY_LEFT:
+                delta = 3;
                 target->x = client->x - 1;
                 target->y = client->y;
                 break;
             case KEY_RIGHT:
+                delta = 4;
                 target->x = client->x + 1;
                 target->y = client->y;
                 break;
             case 27:
-                switch(side) {
-                case Human:
-                    status = MinotaurWins;
-                    break;
-                case Minotaur:
-                    status = HumanWins;
-                    break;
-                }
+                status = ForceEnd;
             default:
+                delta = 0;
                 target->x = client->x;
                 target->y = client->y;
         }
@@ -404,22 +421,25 @@ void init_client(const int width, const int height, const Affiliation side, cons
             client->x = target->x;
             client->y = target->y;
             reveal(fog, client, size.x, size.y);
+        } else {
+            delta = 0;
         }
 
         /* Exchange information with the server */
-        InfoType server_status;
-        recv_status(sockfd, &server_status, server);
-        if (terminate(info_scene, server_status, side) == TRUE) {
-            break;
-        }
-        if (terminate(info_scene, status, side) == TRUE) {
-            send_status(sockfd, status, client);
-            break;
-        }
-        send_status(sockfd, Location, client);
+        GameStatus server_status = 0;
+        if (recv_status(sockfd, &server_status, server) == -1)
+            status = ForceEnd;
+        status = status > server_status ? status : server_status;
+        if (send_status(sockfd, status, delta) == -1)
+            status = ForceEnd;
 
         /* Update screen */
         show_game(game_scene, map, fog, &size, human, door, minotaur);
+
+        /* Terminate */
+        if (terminate(status, side, info_scene)) {
+            break;
+        }
     }
 
     /* Exit */

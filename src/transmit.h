@@ -34,15 +34,17 @@
 
 /* Types */
 typedef enum {
-    HumanWins, MinotaurWins, Location, InProgress
-} InfoType;
+    InProgress = 0, ForceEnd = 1, Caught = 2, Escaped = 3
+} GameStatus;
+
+typedef unsigned char Direction;
 
 /* Prototypes */
 int send_point(USock sockfd, const Point *pt);
 int recv_point(USock sockfd, Point *pt);
-int send_initial_info(USock sockfd, const Point size, const State **map, const Point *player, const Point *door, const Point *minotaur);
+int send_initial_info(USock sockfd, const Point size, State **map, const Point *player, const Point *door, const Point *minotaur);
 int recv_initial_info(USock sockfd, const Point size, State **map, Point *player, Point *door, Point *minotaur);
-int send_status(USock sockfd, const InfoType type, const Point *position);
-int recv_status(USock sockfd, InfoType *type, Point *position);
+int send_status(USock sockfd, GameStatus type, const Direction delta);
+int recv_status(USock sockfd, GameStatus *type, Point *position);
 
 #endif

@@ -40,7 +40,7 @@ int recv_point(USock sockfd, Point *pt) {
     return 0;
 }
 
-int send_initial_info(USock sockfd, const Point size, const State **map, const Point *player, const Point *door, const Point *minotaur) {
+int send_initial_info(USock sockfd, const Point size, State **map, const Point *player, const Point *door, const Point *minotaur) {
     /* Send map */
     for (unsigned i = 0; i < size.x; i++)
         for(unsigned j = 0; j < size.y; j++) {
@@ -78,21 +78,30 @@ int recv_initial_info(USock sockfd, const Point size, State **map, Point *player
     return 0;
 }
 
-int send_status(USock sockfd, InfoType type, const Point *position) {
-    if (send(sockfd, (const char *)&type, sizeof(InfoType), 0) == USOCK_ERROR)
+int send_status(USock sockfd, GameStatus type, const Direction value) {
+    if (send(sockfd, (const char *)&type, sizeof(GameStatus), 0) == USOCK_ERROR)
         return -1;
-    if (type == Location)
-        if (send(sockfd, (const char *)position, sizeof(Point), 0) == USOCK_ERROR)
+    if (type == InProgress)
+        if (send(sockfd, (const char *)&value, 1, 0) == USOCK_ERROR)
             return -1;
     return 0;
 }
 
-int recv_status(USock sockfd, InfoType *type, Point *position) {
-    if (recv(sockfd, (char *)type, sizeof(InfoType), 0) == USOCK_ERROR)
+int recv_status(USock sockfd, GameStatus *type, Point *position) {
+    if (recv(sockfd, (char *)type, sizeof(GameStatus), 0) == USOCK_ERROR)
         return -1;
-    if (*type == Location)
-        if (recv(sockfd, (char *)position, sizeof(Point), 0) == USOCK_ERROR)
+    if (*type == InProgress) {
+        static const Point direction[] = { {.x = 0, .y = 0},
+                                           {.x = 0, .y = -1},
+                                           {.x = 0, .y = 1},
+                                           {.x = -1, .y = 0},
+                                           {.x = 1, .y = 0} };
+        Direction delta;
+        if (recv(sockfd, (char *)&delta, 1, 0) == USOCK_ERROR)
             return -1;
+        position->x += direction[delta].x;
+        position->y += direction[delta].y;
+    }
     return 0;
 }
 

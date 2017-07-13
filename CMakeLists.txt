@@ -31,7 +31,7 @@ project(Labyrinth C)
 
 # Version
 set(Labyrinth_VERSION_MAJOR 3)
-set(Labyrinth_VERSION_MINOR 0)
+set(Labyrinth_VERSION_MINOR 1)
 set(Labyrinth_BUILD_TYPE "Release")
 
 # Configure project paths
